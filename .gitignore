@@ -1,0 +1,8 @@
+/ecfg
+/tags
+/build/
+/target/
+.bundle
+man/*.html
+man/*.1
+man/*.5

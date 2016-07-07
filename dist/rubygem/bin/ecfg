@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+platform = `uname -sm`
+
+platform_dir = case platform
+               when /^Darwin/
+                 'darwin-amd64'
+               when /^Linux.*64/
+                 'linux-amd64'
+               else
+                 abort 'ecfg is not supported on your platform.'
+               end
+
+bindir = File.expand_path("../../build/#{platform_dir}", __FILE__)
+
+exec(
+  {
+    'PATH'    => "#{bindir}:#{ENV['PATH']}",
+    'MANPATH' => File.expand_path('../../man', __FILE__)
+  },
+  'ecfg',
+  *ARGV
+)

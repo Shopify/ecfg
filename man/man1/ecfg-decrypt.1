@@ -1,0 +1,25 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "ECFG\-DECRYPT" "1" "July 2016" "Shopify" "Version 0.0.1"
+.
+.SH "NAME"
+\fBecfg\-decrypt\fR \- decrypt an ecfg file
+.
+.SH "SYNOPSIS"
+\fBecfg decrypt\fR [\fB\-t\fR|\fB\-\-type\fR \fIfiletype\fR] [\fIfile\fR]
+.
+.SH "DESCRIPTION"
+\fBecfg decrypt\fR decrypts the given file; that is, decrypts all the encrypted keys within it, printing the full decrypted file to stdout\. The key mentioned in the ecfg(5) file must be present in the keydir unless \fBECFG_PRIVATE_KEY\fR is present in the environment\. See ecfg(1) for more on key lookup semantics\.
+.
+.P
+If no filename is given, data will instead be read from \fBstdin\fR\.
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-t\fR, \fB\-\-type\fR="json|yaml"
+Specify the filetype\. Required when passing data from \fBstdin\fR and when \fIfile\fR does not end in "\.ecfg\.json" or "\.ecfg\.yaml"\.
+.
+.SH "SEE ALSO"
+ecfg(1), ecfg\-encrypt(1), ecfg\-keygen(1), ecfg(5)

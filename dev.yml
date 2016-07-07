@@ -1,0 +1,13 @@
+name: ecfg
+
+up:
+  - homebrew:
+      - dpkg
+  - ruby: 2.1.6
+  - go: 1.6.2
+  - bundler
+
+commands:
+  build: make
+  run-built: build/bin/darwin-amd64
+  test: go test ./...

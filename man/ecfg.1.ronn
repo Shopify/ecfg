@@ -1,0 +1,67 @@
+# ecfg(1) -- manage application secrets via encrypted config
+
+## SYNOPSIS
+
+`ecfg` `command` [`args`]
+
+## DESCRIPTION
+
+`ecfg` is a utility for managing a collection of secrets, typically to be
+committed to source control. The secrets are encrypted using public key,
+elliptic curve cryptography. Secrets are collected in a JSON or YAML file, in
+which all the string values are encrypted. Public keys are embedded in the
+file, and the decrypter looks up the corresponding private key from its local
+filesystem or process environment.
+
+See ecfg(5) for more information on the `ecfg` file format, and read on for
+a workflow example.
+
+## COMMANDS
+
+`ecfg help` [*command*]
+
+:   Show (this) help for `ecfg` in general, or for a specific command
+
+`ecfg encrypt` : ecfg-encrypt(1)
+
+:   Encrypt an `ecfg` file (alias: `ecfg e`)
+
+`ecfg decrypt` : ecfg-decrypt(1)
+
+:   Decrypt an `ecfg` file (alias: `ecfg d`)
+
+`ecfg keygen` : ecfg-keygen(1)
+
+:   Generate an `ecfg` keypair (alias: `ecfg g`)
+
+## ENVIRONMENT
+
+`ECFG_KEYDIR`
+
+:   Override the default key lookup directory of /opt/ecfg/keys.
+
+`ECFG_PRIVATE_KEY`
+
+:   When decrypting, instead of looking up the matching private key for the
+    public key given in the input file, assume the file was encrypted to the
+    provided private key. This option is useful when running in environments
+    such as heroku where obtaining keys from disk is impractical.
+
+## WORKFLOW
+
+TODO
+
+## BUGS
+
+Report security issues to <burke.libbey@shopify.com> and
+<security@shopify.com>.
+
+File non-security-related bugs at <https://github.com/Shopify/ecfg>.
+
+## COPYRIGHT
+
+`ecfg` is copyright (C) 2016 Shopify under MIT license.
+
+## SEE ALSO
+
+ecfg-encrypt(1), ecfg-decrypt(1), ecfg-keygen(1), ecfg(5)

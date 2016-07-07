@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='content-type' value='text/html;charset=utf8'>
+  <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
+  <title>ecfg(1) - manage application secrets via encrypted config</title>
+  <style type='text/css' media='all'>
+  /* style: man */
+  body#manpage {margin:0}
+  .mp {max-width:100ex;padding:0 9ex 1ex 4ex}
+  .mp p,.mp pre,.mp ul,.mp ol,.mp dl {margin:0 0 20px 0}
+  .mp h2 {margin:10px 0 0 0}
+  .mp > p,.mp > pre,.mp > ul,.mp > ol,.mp > dl {margin-left:8ex}
+  .mp h3 {margin:0 0 0 4ex}
+  .mp dt {margin:0;clear:left}
+  .mp dt.flush {float:left;width:8ex}
+  .mp dd {margin:0 0 0 9ex}
+  .mp h1,.mp h2,.mp h3,.mp h4 {clear:left}
+  .mp pre {margin-bottom:20px}
+  .mp pre+h2,.mp pre+h3 {margin-top:22px}
+  .mp h2+pre,.mp h3+pre {margin-top:5px}
+  .mp img {display:block;margin:auto}
+  .mp h1.man-title {display:none}
+  .mp,.mp code,.mp pre,.mp tt,.mp kbd,.mp samp,.mp h3,.mp h4 {font-family:monospace;font-size:14px;line-height:1.42857142857143}
+  .mp h2 {font-size:16px;line-height:1.25}
+  .mp h1 {font-size:20px;line-height:2}
+  .mp {text-align:justify;background:#fff}
+  .mp,.mp code,.mp pre,.mp pre code,.mp tt,.mp kbd,.mp samp {color:#131211}
+  .mp h1,.mp h2,.mp h3,.mp h4 {color:#030201}
+  .mp u {text-decoration:underline}
+  .mp code,.mp strong,.mp b {font-weight:bold;color:#131211}
+  .mp em,.mp var {font-style:italic;color:#232221;text-decoration:none}
+  .mp a,.mp a:link,.mp a:hover,.mp a code,.mp a pre,.mp a tt,.mp a kbd,.mp a samp {color:#0000ff}
+  .mp b.man-ref {font-weight:normal;color:#434241}
+  .mp pre {padding:0 4ex}
+  .mp pre code {font-weight:normal;color:#434241}
+  .mp h2+pre,h3+pre {padding-left:0}
+  ol.man-decor,ol.man-decor li {margin:3px 0 10px 0;padding:0;float:left;width:33%;list-style-type:none;text-transform:uppercase;color:#999;letter-spacing:1px}
+  ol.man-decor {width:100%}
+  ol.man-decor li.tl {text-align:left}
+  ol.man-decor li.tc {text-align:center;letter-spacing:4px}
+  ol.man-decor li.tr {text-align:right;float:right}
+  </style>
+  <style type='text/css' media='all'>
+  /* style: toc */
+  .man-navigation {display:block !important;position:fixed;top:0;left:113ex;height:100%;width:100%;padding:48px 0 0 0;border-left:1px solid #dbdbdb;background:#eee}
+  .man-navigation a,.man-navigation a:hover,.man-navigation a:link,.man-navigation a:visited {display:block;margin:0;padding:5px 2px 5px 30px;color:#999;text-decoration:none}
+  .man-navigation a:hover {color:#111;text-decoration:underline}
+  </style>
+</head>
+<!--
+  The following styles are deprecated and will be removed at some point:
+  div#man, div#man ol.man, div#man ol.head, div#man ol.man.
+
+  The .man-page, .man-decor, .man-head, .man-foot, .man-title, and
+  .man-navigation should be used instead.
+-->
+<body id='manpage'>
+  <div class='mp' id='man'>
+
+  <div class='man-navigation' style='display:none'>
+    <a href="#NAME">NAME</a>
+    <a href="#SYNOPSIS">SYNOPSIS</a>
+    <a href="#DESCRIPTION">DESCRIPTION</a>
+    <a href="#COMMANDS">COMMANDS</a>
+    <a href="#ENVIRONMENT">ENVIRONMENT</a>
+    <a href="#WORKFLOW">WORKFLOW</a>
+    <a href="#BUGS">BUGS</a>
+    <a href="#COPYRIGHT">COPYRIGHT</a>
+    <a href="#SEE-ALSO">SEE ALSO</a>
+  </div>
+
+  <ol class='man-decor man-head man head'>
+    <li class='tl'>ecfg(1)</li>
+    <li class='tc'>Version 0.0.1</li>
+    <li class='tr'>ecfg(1)</li>
+  </ol>
+
+  <h2 id="NAME">NAME</h2>
+<p class="man-name">
+  <code>ecfg</code> - <span class="man-whatis">manage application secrets via encrypted config</span>
+</p>
+
+<h2 id="SYNOPSIS">SYNOPSIS</h2>
+
+<p><code>ecfg</code> <code>command</code> [<code>args</code>]</p>
+
+<h2 id="DESCRIPTION">DESCRIPTION</h2>
+
+<p><code>ecfg</code> is a utility for managing a collection of secrets, typically to be
+committed to source control. The secrets are encrypted using public key,
+elliptic curve cryptography. Secrets are collected in a JSON or YAML file, in
+which all the string values are encrypted. Public keys are embedded in the
+file, and the decrypter looks up the corresponding private key from its local
+filesystem or process environment.</p>
+
+<p>See <a class="man-ref" href="ecfg.5.html">ecfg<span class="s">(5)</span></a> for more information on the <code>ecfg</code> file format, and read on for
+a workflow example.</p>
+
+<h2 id="COMMANDS">COMMANDS</h2>
+
+<dl>
+<dt><code>ecfg help</code> [<em>command</em>]</dt>
+<dd><p>  Show (this) help for <code>ecfg</code> in general, or for a specific command</p></dd>
+<dt><code>ecfg encrypt</code> : <a class="man-ref" href="ecfg-encrypt.1.html">ecfg-encrypt<span class="s">(1)</span></a></dt>
+<dd><p>  Encrypt an <code>ecfg</code> file (alias: <code>ecfg e</code>)</p></dd>
+<dt><code>ecfg decrypt</code> : <a class="man-ref" href="ecfg-decrypt.1.html">ecfg-decrypt<span class="s">(1)</span></a></dt>
+<dd><p>  Decrypt an <code>ecfg</code> file (alias: <code>ecfg d</code>)</p></dd>
+<dt><code>ecfg keygen</code> : <a class="man-ref" href="ecfg-keygen.1.html">ecfg-keygen<span class="s">(1)</span></a></dt>
+<dd><p>  Generate an <code>ecfg</code> keypair (alias: <code>ecfg g</code>)</p></dd>
+</dl>
+
+<h2 id="ENVIRONMENT">ENVIRONMENT</h2>
+
+<dl>
+<dt><code>ECFG_KEYDIR</code></dt>
+<dd><p>  Override the default key lookup directory of /opt/ecfg/keys.</p></dd>
+<dt><code>ECFG_PRIVATE_KEY</code></dt>
+<dd><p>  When decrypting, instead of looking up the matching private key for the
+  public key given in the input file, assume the file was encrypted to the
+  provided private key. This option is useful when running in environments
+  such as heroku where obtaining keys from disk is impractical.</p></dd>
+</dl>
+
+<h2 id="WORKFLOW">WORKFLOW</h2>
+
+<p>TODO</p>
+
+<h2 id="BUGS">BUGS</h2>
+
+<p>Report security issues to <a href="&#109;&#97;&#x69;&#x6c;&#116;&#x6f;&#x3a;&#98;&#117;&#x72;&#x6b;&#101;&#46;&#x6c;&#x69;&#x62;&#98;&#101;&#121;&#64;&#x73;&#104;&#x6f;&#112;&#x69;&#102;&#121;&#46;&#x63;&#x6f;&#x6d;" data-bare-link="true">&#x62;&#x75;&#114;&#107;&#x65;&#x2e;&#108;&#105;&#x62;&#x62;&#x65;&#x79;&#x40;&#115;&#x68;&#111;&#112;&#x69;&#x66;&#121;&#x2e;&#x63;&#x6f;&#x6d;</a> and
+<a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#x3a;&#115;&#101;&#x63;&#x75;&#x72;&#105;&#x74;&#x79;&#64;&#115;&#104;&#x6f;&#x70;&#105;&#102;&#x79;&#46;&#99;&#111;&#x6d;" data-bare-link="true">&#x73;&#x65;&#99;&#117;&#x72;&#105;&#116;&#x79;&#x40;&#115;&#104;&#111;&#112;&#x69;&#x66;&#121;&#46;&#99;&#x6f;&#109;</a>.</p>
+
+<p>File non-security-related bugs at <a href="https://github.com/Shopify/ecfg" data-bare-link="true">https://github.com/Shopify/ecfg</a>.</p>
+
+<h2 id="COPYRIGHT">COPYRIGHT</h2>
+
+<p><code>ecfg</code> is copyright (C) 2016 Shopify under MIT license.</p>
+
+<h2 id="SEE-ALSO">SEE ALSO</h2>
+
+<p><a class="man-ref" href="ecfg-encrypt.1.html">ecfg-encrypt<span class="s">(1)</span></a>, <a class="man-ref" href="ecfg-decrypt.1.html">ecfg-decrypt<span class="s">(1)</span></a>, <a class="man-ref" href="ecfg-keygen.1.html">ecfg-keygen<span class="s">(1)</span></a>, <a class="man-ref" href="ecfg.5.html">ecfg<span class="s">(5)</span></a></p>
+
+
+  <ol class='man-decor man-foot man foot'>
+    <li class='tl'>Shopify</li>
+    <li class='tc'>July 2016</li>
+    <li class='tr'>ecfg(1)</li>
+  </ol>
+
+  </div>
+</body>
+</html>

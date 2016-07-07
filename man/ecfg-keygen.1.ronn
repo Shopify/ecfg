@@ -1,0 +1,24 @@
+# ecfg-keygen(1) -- generate a new keypair for use with ecfg
+
+## SYNOPSIS
+
+`ecfg keygen` [`-w`|`--write`]
+
+## DESCRIPTION
+
+Generates a new keypair suitable for use with ecfg(1) and prints the resulting
+public and private keys to `stdout`. The public key should be inserted into
+an ecfg(5) document and the private key should be stored in the keydir of the
+decrypting system(s).
+
+## OPTIONS
+
+`-w`, `--write`
+
+:   Rather than printing the keypair to the screen, write it directly to the
+    keydir.  The public key will still be printed, but the private key will be
+    inserted into the keydir
+
+## SEE ALSO
+
+ecfg(1), ecfg-encrypt(1), ecfg-decrypt(1), ecfg(5)

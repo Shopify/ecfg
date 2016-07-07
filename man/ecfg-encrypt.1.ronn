@@ -1,0 +1,26 @@
+# ecfg-encrypt(1) -- encrypt an ecfg file
+
+## SYNOPSIS
+
+`ecfg encrypt` [`-t`|`--type` *filetype*] [*file*]
+
+## DESCRIPTION
+
+`efcg encrypt` encrypts any unencrypted data in the given file or, if no
+filename is given, `stdin`.
+
+If a filename is given, that file will be modified in place; or, if the data is
+being read from `stdin`, the encrypted file will be written to `stdout`.
+
+See ecfg(5) for information on the structure of an encryptable file.
+
+## OPTIONS
+
+`-t`, `--type`="json|yaml"
+
+:   Specify the filetype. Required when passing data from `stdin` and when
+    *file* does not end in ".ecfg.json" or ".ecfg.yaml".
+
+## SEE ALSO
+
+ecfg(1), ecfg-decrypt(1), ecfg-keygen(1), ecfg(5)

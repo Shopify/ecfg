@@ -1,0 +1,25 @@
+# ecfg-decrypt(1) -- decrypt an ecfg file
+
+## SYNOPSIS
+
+`ecfg decrypt` [`-t`|`--type` *filetype*] [*file*]
+
+## DESCRIPTION
+
+`ecfg decrypt` decrypts the given file; that is, decrypts all the encrypted
+keys within it, printing the full decrypted file to stdout. The key mentioned
+in the ecfg(5) file must be present in the keydir unless `ECFG_PRIVATE_KEY` is
+present in the environment. See ecfg(1) for more on key lookup semantics.
+
+If no filename is given, data will instead be read from `stdin`.
+
+## OPTIONS
+
+`-t`, `--type`="json|yaml"
+
+:   Specify the filetype. Required when passing data from `stdin` and when
+    *file* does not end in ".ecfg.json" or ".ecfg.yaml".
+
+## SEE ALSO
+
+ecfg(1), ecfg-encrypt(1), ecfg-keygen(1), ecfg(5)

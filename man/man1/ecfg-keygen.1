@@ -1,0 +1,22 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "ECFG\-KEYGEN" "1" "July 2016" "Shopify" "Version 0.0.1"
+.
+.SH "NAME"
+\fBecfg\-keygen\fR \- generate a new keypair for use with ecfg
+.
+.SH "SYNOPSIS"
+\fBecfg keygen\fR [\fB\-w\fR|\fB\-\-write\fR]
+.
+.SH "DESCRIPTION"
+Generates a new keypair suitable for use with ecfg(1) and prints the resulting public and private keys to \fBstdout\fR\. The public key should be inserted into an ecfg(5) document and the private key should be stored in the keydir of the decrypting system(s)\.
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-w\fR, \fB\-\-write\fR
+Rather than printing the keypair to the screen, write it directly to the keydir\. The public key will still be printed, but the private key will be inserted into the keydir
+.
+.SH "SEE ALSO"
+ecfg(1), ecfg\-encrypt(1), ecfg\-decrypt(1), ecfg(5)

@@ -1,0 +1,23 @@
+#!/bin/bash
+set -euo pipefail
+
+git fetch -q origin
+
+push_url="$(git remote get-url origin)"
+rev="$(git rev-parse origin/gh-pages)"
+
+trap 'rm -rf pages' EXIT
+git clone -q -b gh-pages . pages
+
+git='git -C pages'
+
+${git} reset -q --hard "${rev}"
+
+cp man/html/* dist/site/index.html pages/
+
+if ${git} status --porcelain | grep -q .; then
+  ${git} add .
+  ${git} commit -q -m 'rebuild gh-pages'
+  ${git} push -q "${push_url}" gh-pages
+fi
+

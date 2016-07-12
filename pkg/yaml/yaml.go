@@ -1,4 +1,4 @@
-// package yaml implements YAML support for the Go language.
+// Package yaml implements YAML support for the Go language.
 //
 // Source code and other details for the project are available at GitHub:
 //
@@ -222,7 +222,7 @@ func getStructInfo(st reflect.Type) (*structInfo, error) {
 	inlineMap := -1
 	for i := 0; i != n; i++ {
 		field := st.Field(i)
-		if field.PkgPath != "" {
+		if field.PkgPath != "" && !field.Anonymous {
 			continue // Private field
 		}
 

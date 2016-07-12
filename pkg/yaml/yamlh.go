@@ -521,8 +521,6 @@ type yaml_parser_t struct {
 
 	read_handler yaml_read_handler_t // Read handler.
 
-	all_tokens []yaml_token_t
-
 	input_file io.Reader // File input data.
 	input      []byte    // String input data.
 	input_pos  int

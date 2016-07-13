@@ -84,7 +84,7 @@ func TestEncryptFileInPlace(t *testing.T) {
 	assertNoError(t, err)
 	match := regexp.MustCompile(`{"_public_key": "8d8.*", "a": "EJ.*"}`)
 	if match.Find(output) == nil {
-		t.Errorf("unexpected output")
+		t.Errorf("unexpected output: %s", output)
 	}
 
 }

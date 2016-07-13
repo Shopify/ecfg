@@ -14,6 +14,10 @@ import (
 	"github.com/Shopify/ecfg/pkg/json"
 )
 
+type ScalarValueTransformer interface {
+	TransformScalarValues([]byte, func([]byte) ([]byte, error))
+}
+
 // GenerateKeypair is used to create a new ecfg keypair. It returns the keys as
 // hex-encoded strings, suitable for printing to the screen. hex.DecodeString
 // can be used to load the true representation if necessary.
@@ -23,10 +27,6 @@ func GenerateKeypair() (pub string, priv string, err error) {
 		return "", "", err
 	}
 	return kp.PublicString(), kp.PrivateString(), nil
-}
-
-type ScalarValueTransformer interaface{
-	TransformScalarValues([]byte, func([]byte) ([]byte, error))
 }
 
 // EncryptFileInPlace takes a path to a file on disk, which must be a valid ecfg file
@@ -98,16 +98,9 @@ func DecryptFile(filePath, keydir string) ([]byte, error) {
 	}
 
 	decrypter := myKP.Decrypter()
-	walker := json.Walker{
-		Action: decrypter.Decrypt,
-	}
 
-	newdata, err := walker.Walk(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return newdata, nil
+	svt := json.ScalarValueTransformer{}
+	return svt.TransformScalarValues(data, decrypter.Decrypt)
 }
 
 func findPrivateKey(pubkey [32]byte, keydir string) (privkey [32]byte, err error) {

@@ -32,14 +32,15 @@ ugh: # the worst
 `
 
 func TestTranform(t *testing.T) {
-	xform := func(a string) (string, error) {
-		return fmt.Sprintf("\"ENC[%s]\"", a), nil
+	xform := func(a []byte) ([]byte, error) {
+		return []byte(fmt.Sprintf("ENC[%s]", []byte(a))), nil
 	}
-	out, err := TransformValues(inYaml, xform)
+	svt := ScalarValueTransformer{}
+	out, err := svt.TransformScalarValues([]byte(inYaml), xform)
 	if err != nil {
 		t.Errorf("unexpected err")
 	}
-	if out != outYaml {
+	if string(out) != outYaml {
 		t.Errorf("output mismatch. Got:\n========================\n%s", out)
 	}
 }

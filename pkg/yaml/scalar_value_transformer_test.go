@@ -35,8 +35,8 @@ func TestTranform(t *testing.T) {
 	xform := func(a []byte) ([]byte, error) {
 		return []byte(fmt.Sprintf("ENC[%s]", []byte(a))), nil
 	}
-	svt := ScalarValueTransformer{}
-	out, err := svt.TransformScalarValues([]byte(inYaml), xform)
+	fh := FormatHandler{}
+	out, err := fh.TransformScalarValues([]byte(inYaml), xform)
 	if err != nil {
 		t.Errorf("unexpected err")
 	}

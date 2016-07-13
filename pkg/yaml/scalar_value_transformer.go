@@ -3,7 +3,12 @@ package yaml
 import (
 	"fmt"
 	"strings"
+
+	"github.com/Shopify/ecfg/pkg/format"
 )
+
+// FormatHandler simply exposes the methods required of format.FormatHandler.
+type FormatHandler struct{}
 
 type coarseValue struct {
 	line, column int
@@ -14,8 +19,6 @@ type preciseValue struct {
 	startIndex, endIndex int
 	value                string
 }
-
-type ScalarValueTransformer struct{}
 
 // TransformScalarValues operates in three phases, over the parse tree, then
 // the token stream, then the raw text of the yaml.
@@ -45,7 +48,7 @@ type ScalarValueTransformer struct{}
 //
 //   h([]{start, end, value}) -> []{start, end, value}'
 //   i(input, []{start, end, value}') -> output
-func (svt *ScalarValueTransformer) TransformScalarValues(
+func (h *FormatHandler) TransformScalarValues(
 	yaml []byte,
 	action func([]byte) ([]byte, error),
 ) ([]byte, error) {
@@ -138,3 +141,15 @@ func nodeIsEncryptable(n, parent, prevSibling *node, index int) bool {
 		return false
 	}
 }
+
+// ExtractPublicKey finds the _public_key value in an ecfg document and
+// parses it into a key usable with the crypto library.
+func (h *FormatHandler) ExtractPublicKey(data []byte) (key [32]byte, err error) {
+	var obj map[string]interface{}
+	if err = Unmarshal(data, &obj); err != nil {
+		return
+	}
+	return format.ExtractPublicKeyHelper(obj)
+}
+
+var _ format.FormatHandler = &FormatHandler{}

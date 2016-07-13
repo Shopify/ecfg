@@ -16,10 +16,6 @@ import (
 	"github.com/dustin/gojson"
 )
 
-// ScalarValueTransformer exposes one method to conform to the
-// ecfg.ScalarValueTransformer interface.
-type ScalarValueTransformer struct{}
-
 // TransformScalarValues walks a JSON document, replacing all actionable nodes
 // with the result of calling the passed-in `action` parameter with the content
 // of the node. A node is actionable if it's a string *value* or an array
@@ -37,7 +33,7 @@ type ScalarValueTransformer struct{}
 //   * In {"k": {"a": ["b"]}, Action will run on "b".
 //   * In {"_k": {"a": ["b"]}, Action run on "b".
 //   * In {"k": {"_a": ["b"]}, Action will not run.
-func (svt *ScalarValueTransformer) TransformScalarValues(
+func (h *FormatHandler) TransformScalarValues(
 	data []byte,
 	action func([]byte) ([]byte, error),
 ) ([]byte, error) {

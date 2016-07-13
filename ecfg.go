@@ -11,12 +11,8 @@ import (
 	"strings"
 
 	"github.com/Shopify/ecfg/pkg/crypto"
-	"github.com/Shopify/ecfg/pkg/json"
+	"github.com/Shopify/ecfg/pkg/yaml"
 )
-
-type ScalarValueTransformer interface {
-	TransformScalarValues([]byte, func([]byte) ([]byte, error))
-}
 
 // GenerateKeypair is used to create a new ecfg keypair. It returns the keys as
 // hex-encoded strings, suitable for printing to the screen. hex.DecodeString
@@ -50,15 +46,16 @@ func EncryptFileInPlace(filePath string) (int, error) {
 		return -1, err
 	}
 
-	pubkey, err := json.ExtractPublicKey(data)
+	fh := yaml.FormatHandler{}
+
+	pubkey, err := fh.ExtractPublicKey(data)
 	if err != nil {
 		return -1, err
 	}
 
 	encrypter := myKP.Encrypter(pubkey)
 
-	svt := json.ScalarValueTransformer{}
-	newdata, err := svt.TransformScalarValues(data, encrypter.Encrypt)
+	newdata, err := fh.TransformScalarValues(data, encrypter.Encrypt)
 	if err != nil {
 		return -1, err
 	}
@@ -82,7 +79,9 @@ func DecryptFile(filePath, keydir string) ([]byte, error) {
 		return nil, err
 	}
 
-	pubkey, err := json.ExtractPublicKey(data)
+	fh := yaml.FormatHandler{}
+
+	pubkey, err := fh.ExtractPublicKey(data)
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +98,7 @@ func DecryptFile(filePath, keydir string) ([]byte, error) {
 
 	decrypter := myKP.Decrypter()
 
-	svt := json.ScalarValueTransformer{}
-	return svt.TransformScalarValues(data, decrypter.Decrypt)
+	return fh.TransformScalarValues(data, decrypter.Decrypt)
 }
 
 func findPrivateKey(pubkey [32]byte, keydir string) (privkey [32]byte, err error) {

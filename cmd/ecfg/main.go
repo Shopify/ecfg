@@ -1,12 +1,16 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"runtime"
+	"strings"
 	"syscall"
 
-	"github.com/codegangsta/cli"
+	"github.com/Shopify/ecfg"
+	"github.com/urfave/cli"
 )
 
 var version string // set by Makefile via LDFLAGS
@@ -23,7 +27,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// Rather than using the built-in help printer, display the bundled manpages.
-	cli.HelpPrinter = func(templ string, data interface{}) {
+	cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
 		if cmd, ok := data.(cli.Command); ok {
 			switch cmd.Name {
 			case "encrypt", "decrypt", "keygen":
@@ -39,7 +43,7 @@ func main() {
 			Name:   "keydir, k",
 			Value:  "/opt/ecfg/keys",
 			Usage:  "Directory containing ecfg keys",
-			EnvVar: "ecfg_KEYDIR",
+			EnvVar: "ECFG_KEYDIR",
 		},
 	}
 	app.Usage = "manage encrypted secrets using public key encryption"
@@ -51,11 +55,26 @@ func main() {
 			Name:      "encrypt",
 			ShortName: "e",
 			Usage:     "(re-)encrypt one or more ecfg files",
-			Action: func(c *cli.Context) {
-				if err := encryptAction(c.Args()); err != nil {
-					fmt.Println("Encryption failed:", err)
-					os.Exit(1)
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "type, t",
+					Usage: "Specify the filetype (json or yaml)",
+				},
+			},
+			Action: func(c *cli.Context) error {
+				args := c.Args()
+				if len(args) > 1 {
+					return errors.New("ecfg decrypt only operates on one file at a time")
 				}
+				firstArg := ""
+				if len(args) == 1 {
+					firstArg = args[0]
+				}
+				fileType, err := determineFileType(c.String("t"), firstArg)
+				if err != nil {
+					return err
+				}
+				return encryptAction(firstArg, fileType)
 			},
 		},
 		{
@@ -67,12 +86,25 @@ func main() {
 					Name:  "o",
 					Usage: "print output to the provided file, rather than stdout",
 				},
+				cli.StringFlag{
+					Name:  "type, t",
+					Usage: "Specify the filetype (json or yaml)",
+				},
 			},
-			Action: func(c *cli.Context) {
-				if err := decryptAction(c.Args(), c.GlobalString("keydir"), c.String("o")); err != nil {
-					fmt.Println("Decryption failed:", err)
-					os.Exit(1)
+			Action: func(c *cli.Context) error {
+				args := c.Args()
+				if len(args) > 1 {
+					return errors.New("ecfg decrypt only operates on one file at a time")
 				}
+				firstArg := ""
+				if len(args) == 1 {
+					firstArg = args[0]
+				}
+				fileType, err := determineFileType(c.String("t"), firstArg)
+				if err != nil {
+					return err
+				}
+				return decryptAction(firstArg, c.GlobalString("keydir"), c.String("o"), fileType)
 			},
 		},
 		{
@@ -85,16 +117,39 @@ func main() {
 					Usage: "rather than printing both keys, print the public and write the private into the keydir",
 				},
 			},
-			Action: func(c *cli.Context) {
-				if err := keygenAction(c.Args(), c.GlobalString("keydir"), c.Bool("write")); err != nil {
-					fmt.Println("Key generation failed:", err)
-					os.Exit(1)
-				}
+			Action: func(c *cli.Context) error {
+				return keygenAction(c.Args(), c.GlobalString("keydir"), c.Bool("write"))
 			},
 		},
 	}
 	if err := app.Run(os.Args); err != nil {
-		fmt.Println("Unexpected failure:", err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+}
+
+func determineFileType(typeArg string, firstArg string) (ecfg.FileType, error) {
+	switch typeArg {
+	case "json":
+		return ecfg.FileTypeJSON, nil
+	case "yaml":
+		return ecfg.FileTypeYAML, nil
+	case "":
+		if firstArg == "" {
+			return ecfg.FileTypeJSON, errors.New("--type must be passed when not inferrable from file name")
+		}
+		if strings.HasSuffix(firstArg, "json") {
+			return ecfg.FileTypeJSON, nil
+		}
+		if strings.HasSuffix(firstArg, "yaml") || strings.HasSuffix(firstArg, "yml") {
+			return ecfg.FileTypeYAML, nil
+		}
+		return ecfg.FileTypeJSON, errors.New("can't infer filetype from filename. rename file or specify type with --type")
+	default:
+		return ecfg.FileTypeJSON, errors.New("invalid filetype: specify 'json' or 'yaml'")
+	}
+	if firstArg == "" && typeArg == "" {
+		return ecfg.FileTypeJSON, errors.New("--type must be passed when not inferrable from file name")
+	}
+	return ecfg.FileTypeJSON, nil
 }

@@ -16,13 +16,16 @@ import (
 	"github.com/dustin/gojson"
 )
 
-// Walker takes an Action, which will run on fields selected by ecfg for
-// encryption, and provides a Walk method, which iterates on all the fields in
-// a JSON text, running the Action on all selected fields. Fields are selected
-// if they are a Value (not a Key) of type string, and their referencing Key did
-// *not* begin with an Underscore. Note that this
-// underscore-to-disable-encryption syntax does not propagate down the hierarchy
-// to children.
+// TransformScalarValues walks a JSON document, replacing all actionable nodes
+// with the result of calling the passed-in `action` parameter with the content
+// of the node. A node is actionable if it's a string *value* or an array
+// element, and its referencing key doesn't begin with an underscore. For each
+// actionable node, the contents are replaced with the result of Action.
+// Everything else is unchanged, and arbitrary document structure and
+// formatting are preserved.
+//
+// Note that this  underscore-to-disable-encryption syntax does not propagate
+// down the hierarchy to children.
 // That is:
 //   * In {"_a": "b"}, Action will not be run at all.
 //   * In {"a": "b"}, Action will be run with "b", and the return value will
@@ -30,16 +33,10 @@ import (
 //   * In {"k": {"a": ["b"]}, Action will run on "b".
 //   * In {"_k": {"a": ["b"]}, Action run on "b".
 //   * In {"k": {"_a": ["b"]}, Action will not run.
-type Walker struct {
-	Action func([]byte) ([]byte, error)
-}
-
-// Walk walks an entire JSON structure, running the ecfgWalker.Action on each
-// actionable node. A node is actionable if it's a string *value*, and its
-// referencing key doesn't begin with an underscore. For each actionable node,
-// the contents are replaced with the result of Action. Everything else is
-// unchanged.
-func (ew *Walker) Walk(data []byte) ([]byte, error) {
+func (h *FormatHandler) TransformScalarValues(
+	data []byte,
+	action func([]byte) ([]byte, error),
+) ([]byte, error) {
 	var (
 		inLiteral    bool
 		literalStart int
@@ -81,7 +78,7 @@ func (ew *Walker) Walk(data []byte) ([]byte, error) {
 				} else {
 					res := make(chan promiseResult)
 					go func(subData []byte) {
-						actioned, err := ew.runAction(subData)
+						actioned, err := runAction(subData, action)
 						res <- promiseResult{actioned, err}
 						close(res)
 					}(data[literalStart:i])
@@ -103,12 +100,15 @@ func (ew *Walker) Walk(data []byte) ([]byte, error) {
 	return pline.flush()
 }
 
-func (ew *Walker) runAction(data []byte) ([]byte, error) {
+func runAction(
+	data []byte,
+	action func([]byte) ([]byte, error),
+) ([]byte, error) {
 	unquoted, ok := json.UnquoteBytes(data)
 	if !ok {
 		return nil, fmt.Errorf("invalid json")
 	}
-	done, err := ew.Action(unquoted)
+	done, err := action(unquoted)
 	if err != nil {
 		return nil, err
 	}

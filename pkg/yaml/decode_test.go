@@ -2,8 +2,8 @@ package yaml_test
 
 import (
 	"errors"
+	"github.com/Shopify/ecfg/pkg/yaml"
 	. "gopkg.in/check.v1"
-	"gopkg.in/yaml.v2"
 	"math"
 	"net"
 	"reflect"

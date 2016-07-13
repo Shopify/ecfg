@@ -11,7 +11,16 @@ import (
 	"strings"
 
 	"github.com/Shopify/ecfg/pkg/crypto"
+	"github.com/Shopify/ecfg/pkg/format"
 	"github.com/Shopify/ecfg/pkg/json"
+	"github.com/Shopify/ecfg/pkg/yaml"
+)
+
+type FileType int
+
+const (
+	FileTypeJSON = iota
+	FileTypeYAML
 )
 
 // GenerateKeypair is used to create a new ecfg keypair. It returns the keys as
@@ -30,7 +39,7 @@ func GenerateKeypair() (pub string, priv string, err error) {
 // encryptable-but-unencrypted fields in the file will be encrypted using the
 // public key embdded in the file, and the resulting text will be written over
 // the file present on disk.
-func EncryptFileInPlace(filePath string) (int, error) {
+func EncryptFileInPlace(filePath string, fileType FileType) (int, error) {
 	data, err := readFile(filePath)
 	if err != nil {
 		return -1, err
@@ -41,22 +50,7 @@ func EncryptFileInPlace(filePath string) (int, error) {
 		return -1, err
 	}
 
-	var myKP crypto.Keypair
-	if err := myKP.Generate(); err != nil {
-		return -1, err
-	}
-
-	pubkey, err := json.ExtractPublicKey(data)
-	if err != nil {
-		return -1, err
-	}
-
-	encrypter := myKP.Encrypter(pubkey)
-	walker := json.Walker{
-		Action: encrypter.Encrypt,
-	}
-
-	newdata, err := walker.Walk(data)
+	newdata, err := EncryptData(data, fileType)
 	if err != nil {
 		return -1, err
 	}
@@ -68,19 +62,43 @@ func EncryptFileInPlace(filePath string) (int, error) {
 	return len(newdata), nil
 }
 
+func EncryptData(data []byte, fileType FileType) ([]byte, error) {
+	fh := handlerForType(fileType)
+
+	var myKP crypto.Keypair
+	if err := myKP.Generate(); err != nil {
+		return nil, err
+	}
+
+	pubkey, err := fh.ExtractPublicKey(data)
+	if err != nil {
+		return nil, err
+	}
+
+	encrypter := myKP.Encrypter(pubkey)
+
+	return fh.TransformScalarValues(data, encrypter.Encrypt)
+}
+
 // DecryptFile takes a path to an encrypted ecfg file and returns the data
 // decrypted. The public key used to encrypt the values is embedded in the
 // referenced document, and the matching private key is searched for in keydir.
 // There must exist a file in keydir whose name is the public key from the
 // ecfg document, and whose contents are the corresponding private key. See
 // README.md for more details on this.
-func DecryptFile(filePath, keydir string) ([]byte, error) {
+func DecryptFile(filePath, keydir string, fileType FileType) ([]byte, error) {
 	data, err := readFile(filePath)
 	if err != nil {
 		return nil, err
 	}
 
-	pubkey, err := json.ExtractPublicKey(data)
+	return DecryptData(data, keydir, fileType)
+}
+
+func DecryptData(data []byte, keydir string, fileType FileType) ([]byte, error) {
+	fh := handlerForType(fileType)
+
+	pubkey, err := fh.ExtractPublicKey(data)
 	if err != nil {
 		return nil, err
 	}
@@ -96,28 +114,24 @@ func DecryptFile(filePath, keydir string) ([]byte, error) {
 	}
 
 	decrypter := myKP.Decrypter()
-	walker := json.Walker{
-		Action: decrypter.Decrypt,
-	}
 
-	newdata, err := walker.Walk(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return newdata, nil
+	return fh.TransformScalarValues(data, decrypter.Decrypt)
 }
 
 func findPrivateKey(pubkey [32]byte, keydir string) (privkey [32]byte, err error) {
-	keyFile := fmt.Sprintf("%s/%x", keydir, pubkey)
-	var fileContents []byte
-	fileContents, err = readFile(keyFile)
-	if err != nil {
-		err = fmt.Errorf("couldn't read key file (%s)", err.Error())
-		return
+	keyString := os.Getenv("ECFG_PRIVATE_KEY")
+	if keyString == "" {
+		keyFile := fmt.Sprintf("%s/%x", keydir, pubkey)
+		var fileContents []byte
+		fileContents, err = readFile(keyFile)
+		if err != nil {
+			err = fmt.Errorf("couldn't read key file (%s)", err.Error())
+			return
+		}
+		keyString = strings.TrimSpace(string(fileContents))
 	}
 
-	bs, err := hex.DecodeString(strings.TrimSpace(string(fileContents)))
+	bs, err := hex.DecodeString(keyString)
 	if err != nil {
 		return
 	}
@@ -129,6 +143,17 @@ func findPrivateKey(pubkey [32]byte, keydir string) (privkey [32]byte, err error
 
 	copy(privkey[:], bs)
 	return
+}
+
+func handlerForType(typ FileType) format.FormatHandler {
+	switch typ {
+	case FileTypeJSON:
+		return &json.FormatHandler{}
+	case FileTypeYAML:
+		return &yaml.FormatHandler{}
+	default:
+		panic("bug: invalid file type")
+	}
 }
 
 // for mocking in tests

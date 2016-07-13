@@ -1,5 +1,15 @@
 package yaml
 
+import (
+	"fmt"
+	"strings"
+
+	"github.com/Shopify/ecfg/pkg/format"
+)
+
+// FormatHandler simply exposes the methods required of format.FormatHandler.
+type FormatHandler struct{}
+
 type coarseValue struct {
 	line, column int
 	value        string
@@ -10,8 +20,8 @@ type preciseValue struct {
 	value                string
 }
 
-// TransformValues operates in three phases, over the parse tree, then the
-// token stream, then the raw text of the yaml.
+// TransformScalarValues operates in three phases, over the parse tree, then
+// the token stream, then the raw text of the yaml.
 //
 // First, we scan the fully-parsed AST for any nodes which represent scalar
 //   values and are either hash values or array elements. These have
@@ -38,8 +48,11 @@ type preciseValue struct {
 //
 //   h([]{start, end, value}) -> []{start, end, value}'
 //   i(input, []{start, end, value}') -> output
-func TransformValues(yaml string, transformer func(string) (string, error)) (string, error) {
-	p := newParser([]byte(yaml))
+func (h *FormatHandler) TransformScalarValues(
+	yaml []byte,
+	action func([]byte) ([]byte, error),
+) ([]byte, error) {
+	p := newParser(yaml)
 	defer p.destroy()
 	parse := p.parse()
 	tokenization := p.parser.all_tokens
@@ -52,25 +65,30 @@ func TransformValues(yaml string, transformer func(string) (string, error)) (str
 	coarseValues = findTransformableValues(parse, nil)
 	preciseValues = refineValues(tokenization, coarseValues, nil)
 
-	return transformValues(yaml, preciseValues, transformer)
+	return transformValues(yaml, preciseValues, action)
 }
 
-func transformValues(in string, pvalues []preciseValue, transformer func(string) (string, error)) (string, error) {
+func transformValues(
+	bytesIn []byte,
+	pvalues []preciseValue,
+	action func([]byte) ([]byte, error),
+) ([]byte, error) {
+	in := string(bytesIn)
 	out := ""
 
 	lastPrinted := 0
 	for _, pvalue := range pvalues {
 		out += in[lastPrinted:pvalue.startIndex]
-		xformed, err := transformer(pvalue.value)
+		xformed, err := action([]byte(pvalue.value))
 		if err != nil {
-			return "", err
+			return nil, err
 		}
-		out += xformed
+		out += fmt.Sprintf("%q", xformed)
 		lastPrinted = pvalue.endIndex
 	}
 
 	out += in[lastPrinted:len(in)]
-	return out, nil
+	return []byte(out), nil
 }
 
 func refineValues(tokens []yaml_token_t, cvalues []coarseValue, pvalues []preciseValue) []preciseValue {
@@ -102,22 +120,36 @@ func refineValues(tokens []yaml_token_t, cvalues []coarseValue, pvalues []precis
 }
 
 func findTransformableValues(n *node, cvalues []coarseValue) []coarseValue {
+	var prevSibling *node
 	for idx, ch := range n.children {
 		cvalues = findTransformableValues(ch, cvalues)
-		if nodeIsEncryptable(ch, n, idx) {
+		if nodeIsEncryptable(ch, n, prevSibling, idx) {
 			cvalues = append(cvalues, coarseValue{ch.line, ch.column, ch.value})
 		}
+		prevSibling = ch
 	}
 	return cvalues
 }
 
-func nodeIsEncryptable(n, parent *node, index int) bool {
+func nodeIsEncryptable(n, parent, prevSibling *node, index int) bool {
 	switch parent.kind {
 	case sequenceNode:
 		return n.kind == scalarNode
 	case mappingNode:
-		return n.kind == scalarNode && index%2 == 1
+		return n.kind == scalarNode && index%2 == 1 && !strings.HasPrefix(prevSibling.value, "_")
 	default:
 		return false
 	}
 }
+
+// ExtractPublicKey finds the _public_key value in an ecfg document and
+// parses it into a key usable with the crypto library.
+func (h *FormatHandler) ExtractPublicKey(data []byte) (key [32]byte, err error) {
+	var obj map[string]interface{}
+	if err = Unmarshal(data, &obj); err != nil {
+		return
+	}
+	return format.ExtractPublicKeyHelper(obj)
+}
+
+var _ format.FormatHandler = &FormatHandler{}

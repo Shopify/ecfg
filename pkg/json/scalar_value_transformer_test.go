@@ -4,14 +4,14 @@ import (
 	"testing"
 )
 
-func TestWalker(t *testing.T) {
+func TestScalarValueTransformer(t *testing.T) {
 	action := func(a []byte) ([]byte, error) {
 		return []byte{'E'}, nil
 	}
 
 	for _, tc := range testCases {
-		walker := Walker{Action: action}
-		act, err := walker.Walk([]byte(tc.in))
+		fh := &FormatHandler{}
+		act, err := fh.TransformScalarValues([]byte(tc.in), action)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}

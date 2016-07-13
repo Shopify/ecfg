@@ -8,25 +8,42 @@ import (
 	"github.com/Shopify/ecfg"
 )
 
-func encryptAction(args []string) error {
-	if len(args) < 1 {
-		return fmt.Errorf("at least one file path must be given")
-	}
-	for _, filePath := range args {
-		n, err := ecfg.EncryptFileInPlace(filePath)
+func encryptAction(filePath string, ftype ecfg.FileType) error {
+	if filePath == "" { // read from stdin, write to stdout
+		data, err := ioutil.ReadAll(os.Stdin)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Wrote %d bytes to %s.\n", n, filePath)
+		out, err := ecfg.EncryptData(data, ftype)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(out))
+		return nil
 	}
+	n, err := ecfg.EncryptFileInPlace(filePath, ecfg.FileTypeJSON)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Wrote %d bytes to %s.\n", n, filePath)
 	return nil
 }
 
-func decryptAction(args []string, keydir, outFile string) error {
-	if len(args) != 1 {
-		return fmt.Errorf("exactly one file path must be given")
+func decryptAction(filePath string, keydir, outFile string, ftype ecfg.FileType) error {
+	if filePath == "" { // read from stdin, write to stdout
+		data, err := ioutil.ReadAll(os.Stdin)
+		if err != nil {
+			return err
+		}
+		out, err := ecfg.DecryptData(data, keydir, ftype)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(out))
+		return nil
 	}
-	decrypted, err := ecfg.DecryptFile(args[0], keydir)
+
+	decrypted, err := ecfg.DecryptFile(filePath, keydir, ecfg.FileTypeJSON)
 	if err != nil {
 		return err
 	}

@@ -25,6 +25,10 @@ func GenerateKeypair() (pub string, priv string, err error) {
 	return kp.PublicString(), kp.PrivateString(), nil
 }
 
+type ScalarValueTransformer interaface{
+	TransformScalarValues([]byte, func([]byte) ([]byte, error))
+}
+
 // EncryptFileInPlace takes a path to a file on disk, which must be a valid ecfg file
 // (see README.md for more on what constitutes a valid ecfg file). Any
 // encryptable-but-unencrypted fields in the file will be encrypted using the
@@ -52,11 +56,9 @@ func EncryptFileInPlace(filePath string) (int, error) {
 	}
 
 	encrypter := myKP.Encrypter(pubkey)
-	walker := json.Walker{
-		Action: encrypter.Encrypt,
-	}
 
-	newdata, err := walker.Walk(data)
+	svt := json.ScalarValueTransformer{}
+	newdata, err := svt.TransformScalarValues(data, encrypter.Encrypt)
 	if err != nil {
 		return -1, err
 	}

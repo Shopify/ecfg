@@ -8,10 +8,10 @@
 
 `ecfg` is a utility for managing a collection of secrets, typically to be
 committed to source control. The secrets are encrypted using public key,
-elliptic curve cryptography. Secrets are collected in a JSON or YAML file, in
-which all the string values are encrypted. Public keys are embedded in the
-file, and the decrypter looks up the corresponding private key from its local
-filesystem or process environment.
+elliptic curve cryptography. Secrets are collected in a JSON, YAML, or TOML
+file, in which all the string values are encrypted. Public keys are embedded in
+the file, and the decrypter looks up the corresponding private key from its
+local filesystem or process environment.
 
 See ecfg(5) for more information on the `ecfg` file format, and read on for
 a workflow example.

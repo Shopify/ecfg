@@ -16,10 +16,10 @@ See ecfg(5) for information on the structure of an encryptable file.
 
 ## OPTIONS
 
-`-t`, `--type`="json|yaml"
+`-t`, `--type`="json|yaml|toml"
 
 :   Specify the filetype. Required when passing data from `stdin` and when
-    *file* does not end in ".ecfg.json" or ".ecfg.yaml".
+    *file* does not end in ".ecfg.json", ".ecfg.yaml", or ".ecfg.toml".
 
 ## SEE ALSO
 

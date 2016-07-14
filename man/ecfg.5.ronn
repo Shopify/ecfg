@@ -1,8 +1,8 @@
-# ecfg(5) -- JSON or YAML file with asymmetric-key-encrypted values
+# ecfg(5) -- JSON, YAML, or TOML file with asymmetric-key-encrypted values
 
 ## SYNOPSIS
 
-An `ecfg` file is syntactically a `json` or `yaml`
+An `ecfg` file is syntactically a `json`, `yaml`, or `toml`
 file, but with a few minor semantic additions described below.
 
 ## PUBLIC KEY

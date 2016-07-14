@@ -70,9 +70,11 @@ type lexer struct {
 }
 
 type item struct {
-	typ  itemType
-	val  string
-	line int
+	typ   itemType
+	val   string
+	line  int
+	start int
+	end   int
 }
 
 func (lx *lexer) nextItem() item {
@@ -115,12 +117,12 @@ func (lx *lexer) current() string {
 }
 
 func (lx *lexer) emit(typ itemType) {
-	lx.items <- item{typ, lx.current(), lx.line}
+	lx.items <- item{typ, lx.current(), lx.line, lx.start, lx.pos}
 	lx.start = lx.pos
 }
 
 func (lx *lexer) emitTrim(typ itemType) {
-	lx.items <- item{typ, strings.TrimSpace(lx.current()), lx.line}
+	lx.items <- item{typ, strings.TrimSpace(lx.current()), lx.line, lx.start, lx.pos}
 	lx.start = lx.pos
 }
 
@@ -188,6 +190,8 @@ func (lx *lexer) errorf(format string, values ...interface{}) stateFn {
 		itemError,
 		fmt.Sprintf(format, values...),
 		lx.line,
+		lx.start,
+		lx.pos,
 	}
 	return nil
 }

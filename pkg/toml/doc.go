@@ -1,5 +1,5 @@
 /*
-Package toml provides facilities for decoding and encoding TOML configuration
+package toml provides facilities for decoding and encoding TOML configuration
 files via reflection. There is also support for delaying decoding with
 the Primitive type, and querying the set of keys in a TOML document with the
 MetaData type.

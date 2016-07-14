@@ -1,13 +1,13 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "ECFG" "5" "July 2016" "Shopify" "Version 0.0.1"
+.TH "ECFG" "5" "July 2016" "Shopify" "Version 0.2.0"
 .
 .SH "NAME"
-\fBecfg\fR \- JSON or YAML file with asymmetric\-key\-encrypted values
+\fBecfg\fR \- JSON, YAML, or TOML file with asymmetric\-key\-encrypted values
 .
 .SH "SYNOPSIS"
-An \fBecfg\fR file is syntactically a \fBjson\fR or \fByaml\fR file, but with a few minor semantic additions described below\.
+An \fBecfg\fR file is syntactically a \fBjson\fR, \fByaml\fR, or \fBtoml\fR file, but with a few minor semantic additions described below\.
 .
 .SH "PUBLIC KEY"
 Each \fBecfg\fR file must have a key at the top level named \fB_public_key\fR\. This implies that the top\-level structure must be a hashmap, not an array\.

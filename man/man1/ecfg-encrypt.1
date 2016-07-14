@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "ECFG\-ENCRYPT" "1" "July 2016" "Shopify" "Version 0.0.1"
+.TH "ECFG\-ENCRYPT" "1" "July 2016" "Shopify" "Version 0.2.0"
 .
 .SH "NAME"
 \fBecfg\-encrypt\fR \- encrypt an ecfg file
@@ -21,8 +21,8 @@ See ecfg(5) for information on the structure of an encryptable file\.
 .SH "OPTIONS"
 .
 .TP
-\fB\-t\fR, \fB\-\-type\fR="json|yaml"
-Specify the filetype\. Required when passing data from \fBstdin\fR and when \fIfile\fR does not end in "\.ecfg\.json" or "\.ecfg\.yaml"\.
+\fB\-t\fR, \fB\-\-type\fR="json|yaml|toml"
+Specify the filetype\. Required when passing data from \fBstdin\fR and when \fIfile\fR does not end in "\.ecfg\.json", "\.ecfg\.yaml", or "\.ecfg\.toml"\.
 .
 .SH "SEE ALSO"
 ecfg(1), ecfg\-decrypt(1), ecfg\-keygen(1), ecfg(5)

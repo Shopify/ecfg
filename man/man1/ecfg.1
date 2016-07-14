@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "ECFG" "1" "July 2016" "Shopify" "Version 0.0.1"
+.TH "ECFG" "1" "July 2016" "Shopify" "Version 0.2.0"
 .
 .SH "NAME"
 \fBecfg\fR \- manage application secrets via encrypted config
@@ -10,7 +10,7 @@
 \fBecfg\fR \fBcommand\fR [\fBargs\fR]
 .
 .SH "DESCRIPTION"
-\fBecfg\fR is a utility for managing a collection of secrets, typically to be committed to source control\. The secrets are encrypted using public key, elliptic curve cryptography\. Secrets are collected in a JSON or YAML file, in which all the string values are encrypted\. Public keys are embedded in the file, and the decrypter looks up the corresponding private key from its local filesystem or process environment\.
+\fBecfg\fR is a utility for managing a collection of secrets, typically to be committed to source control\. The secrets are encrypted using public key, elliptic curve cryptography\. Secrets are collected in a JSON, YAML, or TOML file, in which all the string values are encrypted\. Public keys are embedded in the file, and the decrypter looks up the corresponding private key from its local filesystem or process environment\.
 .
 .P
 See ecfg(5) for more information on the \fBecfg\fR file format, and read on for a workflow example\.

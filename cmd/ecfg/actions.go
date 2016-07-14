@@ -18,7 +18,7 @@ func encryptAction(filePath string, ftype ecfg.FileType) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(string(out))
+		fmt.Printf("%s", string(out))
 		return nil
 	}
 	n, err := ecfg.EncryptFileInPlace(filePath, ecfg.FileTypeJSON)
@@ -39,7 +39,7 @@ func decryptAction(filePath string, keydir, outFile string, ftype ecfg.FileType)
 		if err != nil {
 			return err
 		}
-		fmt.Println(string(out))
+		fmt.Printf("%s", string(out))
 		return nil
 	}
 

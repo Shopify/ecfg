@@ -1,6 +1,11 @@
 package toml
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/Shopify/ecfg/pkg/format"
+)
 
 type FormatHandler struct{}
 
@@ -41,10 +46,25 @@ func (h *FormatHandler) TransformScalarValues(
 func encryptableItems(data string) (enc []encryptableItem, err error) {
 	lexer := lex(data)
 
+	keyIsNext := false
+	suppressEncryption := false
+
 	for {
-		switch item := lexer.nextItem(); item.typ {
+		item := lexer.nextItem()
+
+		if keyIsNext {
+			suppressEncryption = strings.HasPrefix(item.val, "_")
+			keyIsNext = false
+		}
+
+		switch item.typ {
+		case itemKeyStart:
+			suppressEncryption = false
+			keyIsNext = true
 		case itemString, itemRawString, itemMultilineString, itemRawMultilineString:
-			enc = append(enc, makeEncryptableItem(item))
+			if !suppressEncryption {
+				enc = append(enc, makeEncryptableItem(item))
+			}
 		case itemEOF:
 			return enc, nil
 		case itemError:
@@ -73,3 +93,15 @@ func makeEncryptableItem(lexItem item) encryptableItem {
 		end:   lexItem.end + adjustment,
 	}
 }
+
+// ExtractPublicKey finds the _public_key value in an ecfg document and
+// parses it into a key usable with the crypto library.
+func (h *FormatHandler) ExtractPublicKey(data []byte) (key [32]byte, err error) {
+	var obj map[string]interface{}
+	if err = Unmarshal(data, &obj); err != nil {
+		return
+	}
+	return format.ExtractPublicKeyHelper(obj)
+}
+
+var _ format.FormatHandler = &FormatHandler{}

@@ -58,7 +58,7 @@ func main() {
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "type, t",
-					Usage: "Specify the filetype (json or yaml)",
+					Usage: "Specify the filetype (json, yaml, or toml)",
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -88,7 +88,7 @@ func main() {
 				},
 				cli.StringFlag{
 					Name:  "type, t",
-					Usage: "Specify the filetype (json or yaml)",
+					Usage: "Specify the filetype (json, yaml, or toml)",
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -134,6 +134,8 @@ func determineFileType(typeArg string, firstArg string) (ecfg.FileType, error) {
 		return ecfg.FileTypeJSON, nil
 	case "yaml":
 		return ecfg.FileTypeYAML, nil
+	case "toml":
+		return ecfg.FileTypeTOML, nil
 	case "":
 		if firstArg == "" {
 			return ecfg.FileTypeJSON, errors.New("--type must be passed when not inferrable from file name")
@@ -144,9 +146,12 @@ func determineFileType(typeArg string, firstArg string) (ecfg.FileType, error) {
 		if strings.HasSuffix(firstArg, "yaml") || strings.HasSuffix(firstArg, "yml") {
 			return ecfg.FileTypeYAML, nil
 		}
+		if strings.HasSuffix(firstArg, "toml") {
+			return ecfg.FileTypeTOML, nil
+		}
 		return ecfg.FileTypeJSON, errors.New("can't infer filetype from filename. rename file or specify type with --type")
 	default:
-		return ecfg.FileTypeJSON, errors.New("invalid filetype: specify 'json' or 'yaml'")
+		return ecfg.FileTypeJSON, errors.New("invalid filetype: specify 'json', 'yaml', or 'toml'")
 	}
 	if firstArg == "" && typeArg == "" {
 		return ecfg.FileTypeJSON, errors.New("--type must be passed when not inferrable from file name")

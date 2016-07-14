@@ -13,6 +13,7 @@ import (
 	"github.com/Shopify/ecfg/pkg/crypto"
 	"github.com/Shopify/ecfg/pkg/format"
 	"github.com/Shopify/ecfg/pkg/json"
+	"github.com/Shopify/ecfg/pkg/toml"
 	"github.com/Shopify/ecfg/pkg/yaml"
 )
 
@@ -21,6 +22,7 @@ type FileType int
 const (
 	FileTypeJSON = iota
 	FileTypeYAML
+	FileTypeTOML
 )
 
 // GenerateKeypair is used to create a new ecfg keypair. It returns the keys as
@@ -151,6 +153,8 @@ func handlerForType(typ FileType) format.FormatHandler {
 		return &json.FormatHandler{}
 	case FileTypeYAML:
 		return &yaml.FormatHandler{}
+	case FileTypeTOML:
+		return &toml.FormatHandler{}
 	default:
 		panic("bug: invalid file type")
 	}

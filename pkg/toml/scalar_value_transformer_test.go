@@ -8,6 +8,8 @@ import (
 const inToml = `
 # This is a TOML document. Boom.
 
+_public_key = "1234"
+
 title = "TOML Example"
 
 [owner]
@@ -47,6 +49,8 @@ hosts = [
 
 const outToml = `
 # This is a TOML document. Boom.
+
+_public_key = "1234"
 
 title = "ENC[TOML Example]"
 

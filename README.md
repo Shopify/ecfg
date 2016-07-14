@@ -24,6 +24,25 @@ The main benefits provided by `ecfg` are:
 
 See [the manpages](https://shopify.github.io/ecfg) for more technical documentation.
 
+## Differences from EJSON 1.0
+
+* Supports YAML and TOML
+* Expected filename changes from `*.ejson` to `*.ecfg.<format>` (e.g.
+  `.ecfg.json`)
+* `encrypt` and `decrypt` can now both receive data on `stdin`, and will emit
+  output to `stdout` in this case.
+* Added `--type`/`-t` flag to `encrypt` and `decrypt` commands. If the filename
+  is `*.ecfg.{json,yaml,toml}`, this flag is optional, but when the type can't
+  be inferred because of a different filename or when reading from stdin, it
+  must be specified.
+* All references to EJSON have changed to ECFG, of course, including
+  `/opt/ecfg/keys` and `ECFG_KEYDIR`.
+* `ECFG_PRIVATE_KEY` can be used to preempt key selection logic during decrypt.
+  If present, ecfg will blindly attempt to decrypt any encrypted values using
+  this key, instead of trying to find the matching key in the keydir. This is
+  useful for deploying to heroku.
+* Overhauled build process
+
 ## Installation
 
 You can download the `.deb` package from [Github

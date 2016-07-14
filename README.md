@@ -32,9 +32,9 @@ See [the manpages](https://shopify.github.io/ecfg) for more technical documentat
 * `encrypt` and `decrypt` can now both receive data on `stdin`, and will emit
   output to `stdout` in this case.
 * Added `--type`/`-t` flag to `encrypt` and `decrypt` commands. If the filename
-  is `*.ecfg.{json,yaml,toml}`, this flag is optional, but when the type can't
+  is `*{json,yaml,yml,toml}`, this flag is optional, but when the type can't
   be inferred because of a different filename or when reading from stdin, it
-  must be specified.
+  must be specified. (note that this recognizes `*.ejson` as json automatically)
 * All references to EJSON have changed to ECFG, of course, including
   `/opt/ecfg/keys` and `ECFG_KEYDIR`.
 * `ECFG_PRIVATE_KEY` can be used to preempt key selection logic during decrypt.

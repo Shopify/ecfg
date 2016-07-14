@@ -29,7 +29,7 @@ See [the manpages](https://shopify.github.io/ecfg) for more technical documentat
 You can download the `.deb` package from [Github
 Releases](https://github.com/Shopify/ecfg/releases).
 
-On macOS, you can install ecfg using `brew install ecfg`.
+On macOS, you can install ecfg using `brew install shopify/shopify/ecfg`.
 
 You can also install ecfg as a gem using `gem install ecfg` or adding it to
 your `Gemfile`.

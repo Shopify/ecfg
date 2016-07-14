@@ -44,6 +44,104 @@ Override the default key lookup directory of /opt/ecfg/keys\.
 When decrypting, instead of looking up the matching private key for the public key given in the input file, assume the file was encrypted to the provided private key\. This option is useful when running in environments such as heroku where obtaining keys from disk is impractical\.
 .
 .SH "WORKFLOW"
+.
+.SS "1: Create the Keydir"
+By default, \fBecfg\fR looks for keys in \fB/opt/ecfg/keys\fR\. You can change this by setting \fBECFG_KEYDIR\fR or passing the \fB\-keydir\fR option\.
+.
+.IP "" 4
+.
+.nf
+
+$ mkdir \-p /opt/ecfg/keys
+.
+.fi
+.
+.IP "" 0
+.
+.SS "2: Generate a keypair"
+When called with \fB\-w\fR, \fBecfg keygen\fR will write the keypair into the \fBkeydir\fR and print the public key\. Without \fB\-w\fR, it will print both keys to stdout\. This is useful if you have to distribute the key to multiple servers via configuration management, etc\.
+.
+.IP "" 4
+.
+.nf
+
+$ ecfg keygen
+Public Key:
+63ccf05a9492e68e12eeb1c705888aebdcc0080af7e594fc402beb24cce9d14f
+Private Key:
+75b80b4a693156eb435f4ed2fe397e583f461f09fd99ec2bd1bdef0a56cf6e64
+
+$ \./ecfg keygen \-w
+53393332c6c7c474af603c078f5696c8fe16677a09a711bba299a6c1c1676a59
+$ cat /opt/ecfg/keys/5339*
+888a4291bef9135729357b8c70e5a62b0bbe104a679d829cdbe56d46a4481aaf
+.
+.fi
+.
+.IP "" 0
+.
+.SS "3: Create an ecfg file"
+The format is described in more detail in ecfg(5)\. For now, create a file that looks something like this\. Fill in the \fB<key>\fR with whatever you got back in step 2\.
+.
+.P
+Create this file as \fBtest\.ecfg\.json\fR:
+.
+.IP "" 4
+.
+.nf
+
+{
+  "_public_key": "<key>",
+  "database_password": "1234password"
+}
+.
+.fi
+.
+.IP "" 0
+.
+.P
+You can also use YAML or TOML if you\'d prefer, as long as there\'s a \fB_public_key\fR element at the top\-level\.
+.
+.SS "4: Encrypt the file"
+Running \fBecfg encrypt test\.ecfg\.json\fR will encrypt any new plaintext keys in the file, and leave any existing encrypted keys untouched:
+.
+.IP "" 4
+.
+.nf
+
+{
+  "_public_key": "63ccf05a9492e68e12eeb1c705888aebdcc0080af7e594fc402beb24cce9d14f",
+  "database_password": "EJ[1:WGj2t4znULHT1IRveMEdvvNXqZzNBNMsJ5iZVy6Dvxs=:kA6ekF8ViYR5ZLeSmMXWsdLfWr7wn9qS:fcHQtdt6nqcNOXa97/M278RX6w==]"
+}
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Try adding another plaintext secret to the file and run \fBecfg encrypt test\.ecfg\.json\fR again\. The \fBdatabase_password\fR field will not be changed, but the new secret will be encrypted\.
+.
+.SS "5: Decrypt the file"
+To decrypt the file, you must have a file present in the \fBkeydir\fR whose name is the 64\-byte hex\-encoded public key exactly as embedded in the ecfg(5) document\. The contents of that file must be the similarly\-encoded private key\. If you used \fBecfg keygen \-w\fR, you\'ve already got this covered\.
+.
+.P
+Unlike ecfg\-encrypt(1), which overwrites the specified files, ecfg\-decrypt(1) only takes one file parameter, and prints the output to \fBstdout\fR:
+.
+.IP "" 4
+.
+.nf
+
+$ ecfg decrypt foo\.ecfg\.json
+{
+  "_public_key": "63ccf05a9492e68e12eeb1c705888aebdcc0080af7e594fc402beb24cce9d14f",
+  "database_password": "1234password"
+}
+.
+.fi
+.
+.IP "" 0
+.
+.P
 TODO
 .
 .SH "BUGS"

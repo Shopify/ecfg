@@ -124,12 +124,88 @@ a workflow example.</p>
 
 <h2 id="WORKFLOW">WORKFLOW</h2>
 
+<h3 id="1-Create-the-Keydir">1: Create the Keydir</h3>
+
+<p>By default, <code>ecfg</code> looks for keys in <code>/opt/ecfg/keys</code>. You can change this by
+setting <code>ECFG_KEYDIR</code> or passing the <code>-keydir</code> option.</p>
+
+<pre><code>$ mkdir -p /opt/ecfg/keys
+</code></pre>
+
+<h3 id="2-Generate-a-keypair">2: Generate a keypair</h3>
+
+<p>When called with <code>-w</code>, <code>ecfg keygen</code> will write the keypair into the <code>keydir</code>
+and print the public key. Without <code>-w</code>, it will print both keys to stdout. This
+is useful if you have to distribute the key to multiple servers via
+configuration management, etc.</p>
+
+<pre><code>$ ecfg keygen
+Public Key:
+63ccf05a9492e68e12eeb1c705888aebdcc0080af7e594fc402beb24cce9d14f
+Private Key:
+75b80b4a693156eb435f4ed2fe397e583f461f09fd99ec2bd1bdef0a56cf6e64
+
+$ ./ecfg keygen -w
+53393332c6c7c474af603c078f5696c8fe16677a09a711bba299a6c1c1676a59
+$ cat /opt/ecfg/keys/5339*
+888a4291bef9135729357b8c70e5a62b0bbe104a679d829cdbe56d46a4481aaf
+</code></pre>
+
+<h3 id="3-Create-an-ecfg-file">3: Create an ecfg file</h3>
+
+<p>The format is described in more detail in <a class="man-ref" href="ecfg.5.html">ecfg<span class="s">(5)</span></a>. For now, create a file that
+looks something like this. Fill in the <code>&lt;key></code> with whatever you got back in
+step 2.</p>
+
+<p>Create this file as <code>test.ecfg.json</code>:</p>
+
+<pre><code>{
+  "_public_key": "&lt;key>",
+  "database_password": "1234password"
+}
+</code></pre>
+
+<p>You can also use YAML or TOML if you'd prefer, as long as there's a
+<code>_public_key</code> element at the top-level.</p>
+
+<h3 id="4-Encrypt-the-file">4: Encrypt the file</h3>
+
+<p>Running <code>ecfg encrypt test.ecfg.json</code> will encrypt any new plaintext keys in
+the file, and leave any existing encrypted keys untouched:</p>
+
+<pre><code>{
+  "_public_key": "63ccf05a9492e68e12eeb1c705888aebdcc0080af7e594fc402beb24cce9d14f",
+  "database_password": "EJ[1:WGj2t4znULHT1IRveMEdvvNXqZzNBNMsJ5iZVy6Dvxs=:kA6ekF8ViYR5ZLeSmMXWsdLfWr7wn9qS:fcHQtdt6nqcNOXa97/M278RX6w==]"
+}
+</code></pre>
+
+<p>Try adding another plaintext secret to the file and run <code>ecfg encrypt
+test.ecfg.json</code> again. The <code>database_password</code> field will not be changed, but the
+new secret will be encrypted.</p>
+
+<h3 id="5-Decrypt-the-file">5: Decrypt the file</h3>
+
+<p>To decrypt the file, you must have a file present in the <code>keydir</code> whose name is
+the 64-byte hex-encoded public key exactly as embedded in the <a class="man-ref" href="ecfg.5.html">ecfg<span class="s">(5)</span></a> document.
+The contents of that file must be the similarly-encoded private key. If you used
+<code>ecfg keygen -w</code>, you've already got this covered.</p>
+
+<p>Unlike <a class="man-ref" href="ecfg-encrypt.1.html">ecfg-encrypt<span class="s">(1)</span></a>, which overwrites the specified files, <a class="man-ref" href="ecfg-decrypt.1.html">ecfg-decrypt<span class="s">(1)</span></a>
+only takes one file parameter, and prints the output to <code>stdout</code>:</p>
+
+<pre><code>$ ecfg decrypt foo.ecfg.json
+{
+  "_public_key": "63ccf05a9492e68e12eeb1c705888aebdcc0080af7e594fc402beb24cce9d14f",
+  "database_password": "1234password"
+}
+</code></pre>
+
 <p>TODO</p>
 
 <h2 id="BUGS">BUGS</h2>
 
-<p>Report security issues to <a href="&#109;&#97;&#x69;&#x6c;&#x74;&#111;&#x3a;&#98;&#117;&#x72;&#107;&#x65;&#46;&#108;&#x69;&#x62;&#x62;&#x65;&#x79;&#x40;&#115;&#x68;&#x6f;&#112;&#x69;&#102;&#x79;&#46;&#99;&#111;&#x6d;" data-bare-link="true">&#x62;&#117;&#x72;&#107;&#101;&#x2e;&#x6c;&#105;&#x62;&#98;&#101;&#121;&#64;&#x73;&#x68;&#x6f;&#112;&#x69;&#102;&#x79;&#x2e;&#x63;&#111;&#x6d;</a> and
-<a href="&#x6d;&#97;&#105;&#x6c;&#x74;&#111;&#58;&#115;&#101;&#x63;&#117;&#114;&#105;&#x74;&#x79;&#64;&#x73;&#x68;&#111;&#x70;&#105;&#102;&#121;&#46;&#x63;&#x6f;&#109;" data-bare-link="true">&#115;&#101;&#99;&#x75;&#x72;&#x69;&#x74;&#121;&#64;&#x73;&#x68;&#111;&#x70;&#105;&#102;&#121;&#x2e;&#x63;&#x6f;&#x6d;</a>.</p>
+<p>Report security issues to <a href="&#x6d;&#x61;&#x69;&#x6c;&#x74;&#111;&#58;&#x62;&#x75;&#114;&#107;&#101;&#x2e;&#108;&#105;&#98;&#x62;&#x65;&#x79;&#64;&#x73;&#x68;&#111;&#x70;&#x69;&#x66;&#x79;&#x2e;&#99;&#111;&#109;" data-bare-link="true">&#x62;&#x75;&#x72;&#107;&#x65;&#46;&#108;&#105;&#x62;&#98;&#101;&#x79;&#x40;&#115;&#104;&#x6f;&#112;&#x69;&#x66;&#121;&#x2e;&#99;&#111;&#109;</a> and
+<a href="&#x6d;&#97;&#x69;&#108;&#116;&#x6f;&#58;&#x73;&#x65;&#99;&#117;&#114;&#105;&#116;&#121;&#x40;&#x73;&#104;&#x6f;&#112;&#105;&#x66;&#121;&#46;&#99;&#x6f;&#109;" data-bare-link="true">&#x73;&#x65;&#x63;&#117;&#114;&#x69;&#x74;&#121;&#x40;&#x73;&#104;&#111;&#112;&#105;&#102;&#121;&#46;&#x63;&#111;&#109;</a>.</p>
 
 <p>File non-security-related bugs at <a href="https://github.com/Shopify/ecfg" data-bare-link="true">https://github.com/Shopify/ecfg</a>.</p>
 

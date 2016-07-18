@@ -37,12 +37,19 @@ See [the manpages](https://shopify.github.io/ecfg) for more technical documentat
   is `*{json,yaml,yml,toml}`, this flag is optional, but when the type can't
   be inferred because of a different filename or when reading from stdin, it
   must be specified. (note that this recognizes `*.ejson` as json automatically)
-* All references to EJSON have changed to ECFG, of course, including
-  `/opt/ecfg/keys` and `ECFG_KEYDIR`.
-* `ECFG_PRIVATE_KEY` can be used to preempt key selection logic during decrypt.
-  If present, ecfg will blindly attempt to decrypt any encrypted values using
-  this key, instead of trying to find the matching key in the keydir. This is
-  useful for deploying to heroku.
+* All references to EJSON have changed to ECFG, including `ECFG_KEYDIR`.
+* Key lookup has been changed to allow a greater degree of control:
+* `ECFG_PRIVATE_KEY` may be set as an environment variable. This can be used to
+  preempt key selection logic during decrypt. If present, ecfg will blindly
+  attempt to decrypt any encrypted values using this key, instead of trying to
+  find the matching key in the keydir. This is useful for deploying to Heroku.
+* Unless `ECFG_KEYDIR` is set, ecfg will now be look in four directories (in
+  order of decreasing precedence):
+  * `$XDG_CONFIG_HOME/ecfg/keys` (if set, and non-root)
+  * `$HOME/.ecfg/keys` (if non-root)
+  * `/etc/ecfg/keys`
+  * `/opt/ejson/keys`
+* If `ECFG_KEYDIR` is set, then ecfg will look in `$ECFG_KEYDIR/keys`
 * Overhauled build process
 
 ## Installation
@@ -59,11 +66,11 @@ your `Gemfile`.
 
 ### 1: Create the Keydir
 
-By default, ecfg looks for keys in `/opt/ecfg/keys`. You can change this by
+By default, ecfg looks for keys in `/etc/ecfg/keys`. You can change this by
 setting `ECFG_KEYDIR` or passing the `--keydir` option.
 
 ```
-$ mkdir -p /opt/ecfg/keys
+$ mkdir -p /etc/ecfg/keys
 ```
 
 ### 2: Generate a keypair
@@ -72,6 +79,14 @@ When called with `-w`, `ecfg keygen` will write the keypair into the `keydir`
 and print the public key. Without `-w`, it will print both keys to stdout. This
 is useful if you have to distribute the key to multiple servers via
 configuration management, etc.
+
+`ecfg keygen` will write the keypair to the first directory on the keypath
+that's writable:
+
+1. `$XDG_CONFIG_HOME/ecfg/keys` (if non-root and `$XDG_CONFIG_HOME` is set)
+1. `$HOME/.ecfg/keys` (if non-root)
+1. `/etc/ecfg/keys`
+1. `/opt/ejson/keys`
 
 ```
 $ ecfg keygen
@@ -84,7 +99,14 @@ Private Key:
 ```
 $ ecfg keygen -w
 53393332c6c7c474af603c078f5696c8fe16677a09a711bba299a6c1c1676a59
-$ cat /opt/ecfg/keys/5339*
+$ cat ~/.ecfg/keys/5339*
+888a4291bef9135729357b8c70e5a62b0bbe104a679d829cdbe56d46a4481aaf
+```
+
+```
+$ sudo ecfg keygen -w
+53393332c6c7c474af603c078f5696c8fe16677a09a711bba299a6c1c1676a59
+$ cat /etc/ecfg/keys/5339*
 888a4291bef9135729357b8c70e5a62b0bbe104a679d829cdbe56d46a4481aaf
 ```
 

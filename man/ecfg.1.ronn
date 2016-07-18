@@ -2,7 +2,7 @@
 
 ## SYNOPSIS
 
-`ecfg` `command` [`args`]
+`ecfg` [`-k`|`--keydir` *dir*] `command` [`args`]
 
 ## DESCRIPTION
 
@@ -34,11 +34,19 @@ a workflow example.
 
 :   Generate an `ecfg` keypair (alias: `ecfg g`)
 
+## GLOBAL OPTIONS
+
+`-k`, `--keydir`=*<dir>*
+
+:   Use the provided directory instead of the default key paths (decribed in
+    the KEY MANAGEMENT section)
+
 ## ENVIRONMENT
 
 `ECFG_KEYDIR`
 
-:   Override the default key lookup directory of /opt/ecfg/keys.
+:   Use a custom directory instead of the default key lookup path decribed in
+    the KEY MANAGEMENT section.
 
 `ECFG_PRIVATE_KEY`
 
@@ -46,6 +54,25 @@ a workflow example.
     public key given in the input file, assume the file was encrypted to the
     provided private key. This option is useful when running in environments
     such as heroku where obtaining keys from disk is impractical.
+
+## KEY MANAGEMENT
+
+`ecfg` keypairs are stored as individual files in a key directory. The file
+name is the public key and the file content is the private key. `ecfg` has a
+default lookup path for key directories:
+
+* `$XDG_CONFIG_HOME/ecfg/keys` (if `$XDG_CONFIG_HOME` is set and running as non-root user)
+* `$HOME/.ecfg/keys` (if running as non-root user)
+* `/etc/ecfg/keys`
+* `/opt/ejson/keys` (for backwards-compatibility with `ejson`)
+
+When passing `-k` or `--keydir` to `ecfg`, or when invoked with `ECFG_KEYDIR`
+in the environment, this lookup path is completely ignored and the key is
+instead retrieved from or stored to the provided path.
+
+If `ECFG_PRIVATE_KEY` is set for decryption, the key directories aren't even
+touched; instead, we just assume the provided private key is the correct one,
+failing if it's not.
 
 ## WORKFLOW
 

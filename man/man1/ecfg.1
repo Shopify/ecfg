@@ -7,7 +7,7 @@
 \fBecfg\fR \- manage application secrets via encrypted config
 .
 .SH "SYNOPSIS"
-\fBecfg\fR \fBcommand\fR [\fBargs\fR]
+\fBecfg\fR [\fB\-k\fR|\fB\-\-keydir\fR \fIdir\fR] \fBcommand\fR [\fBargs\fR]
 .
 .SH "DESCRIPTION"
 \fBecfg\fR is a utility for managing a collection of secrets, typically to be committed to source control\. The secrets are encrypted using public key, elliptic curve cryptography\. Secrets are collected in a JSON, YAML, or TOML file, in which all the string values are encrypted\. Public keys are embedded in the file, and the decrypter looks up the corresponding private key from its local filesystem or process environment\.
@@ -33,15 +33,44 @@ Decrypt an \fBecfg\fR file (alias: \fBecfg d\fR)
 \fBecfg keygen\fR : ecfg\-keygen(1)
 Generate an \fBecfg\fR keypair (alias: \fBecfg g\fR)
 .
+.SH "GLOBAL OPTIONS"
+.
+.TP
+\fB\-k\fR, \fB\-\-keydir\fR=\fI\fR
+Use the provided directory instead of the default key paths (decribed in the KEY MANAGEMENT section)
+.
 .SH "ENVIRONMENT"
 .
 .TP
 \fBECFG_KEYDIR\fR
-Override the default key lookup directory of /opt/ecfg/keys\.
+Use a custom directory instead of the default key lookup path decribed in the KEY MANAGEMENT section\.
 .
 .TP
 \fBECFG_PRIVATE_KEY\fR
 When decrypting, instead of looking up the matching private key for the public key given in the input file, assume the file was encrypted to the provided private key\. This option is useful when running in environments such as heroku where obtaining keys from disk is impractical\.
+.
+.SH "KEY MANAGEMENT"
+\fBecfg\fR keypairs are stored as individual files in a key directory\. The file name is the public key and the file content is the private key\. \fBecfg\fR has a default lookup path for key directories:
+.
+.IP "\(bu" 4
+\fB$XDG_CONFIG_HOME/ecfg/keys\fR (if \fB$XDG_CONFIG_HOME\fR is set and running as non\-root user)
+.
+.IP "\(bu" 4
+\fB$HOME/\.ecfg/keys\fR (if running as non\-root user)
+.
+.IP "\(bu" 4
+\fB/etc/ecfg/keys\fR
+.
+.IP "\(bu" 4
+\fB/opt/ejson/keys\fR (for backwards\-compatibility with \fBejson\fR)
+.
+.IP "" 0
+.
+.P
+When passing \fB\-k\fR or \fB\-\-keydir\fR to \fBecfg\fR, or when invoked with \fBECFG_KEYDIR\fR in the environment, this lookup path is completely ignored and the key is instead retrieved from or stored to the provided path\.
+.
+.P
+If \fBECFG_PRIVATE_KEY\fR is set for decryption, the key directories aren\'t even touched; instead, we just assume the provided private key is the correct one, failing if it\'s not\.
 .
 .SH "WORKFLOW"
 .

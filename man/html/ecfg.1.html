@@ -63,7 +63,9 @@
     <a href="#SYNOPSIS">SYNOPSIS</a>
     <a href="#DESCRIPTION">DESCRIPTION</a>
     <a href="#COMMANDS">COMMANDS</a>
+    <a href="#GLOBAL-OPTIONS">GLOBAL OPTIONS</a>
     <a href="#ENVIRONMENT">ENVIRONMENT</a>
+    <a href="#KEY-MANAGEMENT">KEY MANAGEMENT</a>
     <a href="#WORKFLOW">WORKFLOW</a>
     <a href="#BUGS">BUGS</a>
     <a href="#COPYRIGHT">COPYRIGHT</a>
@@ -83,7 +85,7 @@
 
 <h2 id="SYNOPSIS">SYNOPSIS</h2>
 
-<p><code>ecfg</code> <code>command</code> [<code>args</code>]</p>
+<p><code>ecfg</code> [<code>-k</code>|<code>--keydir</code> <em>dir</em>] <code>command</code> [<code>args</code>]</p>
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
 
@@ -110,17 +112,48 @@ a workflow example.</p>
 <dd><p>  Generate an <code>ecfg</code> keypair (alias: <code>ecfg g</code>)</p></dd>
 </dl>
 
+<h2 id="GLOBAL-OPTIONS">GLOBAL OPTIONS</h2>
+
+<dl>
+<dt><code>-k</code>, <code>--keydir</code>=<em><dir /></em></dt>
+<dd><p>  Use the provided directory instead of the default key paths (decribed in
+  the KEY MANAGEMENT section)</p></dd>
+</dl>
+
 <h2 id="ENVIRONMENT">ENVIRONMENT</h2>
 
 <dl>
 <dt><code>ECFG_KEYDIR</code></dt>
-<dd><p>  Override the default key lookup directory of /opt/ecfg/keys.</p></dd>
+<dd><p>  Use a custom directory instead of the default key lookup path decribed in
+  the KEY MANAGEMENT section.</p></dd>
 <dt><code>ECFG_PRIVATE_KEY</code></dt>
 <dd><p>  When decrypting, instead of looking up the matching private key for the
   public key given in the input file, assume the file was encrypted to the
   provided private key. This option is useful when running in environments
   such as heroku where obtaining keys from disk is impractical.</p></dd>
 </dl>
+
+<h2 id="KEY-MANAGEMENT">KEY MANAGEMENT</h2>
+
+<p><code>ecfg</code> keypairs are stored as individual files in a key directory. The file
+name is the public key and the file content is the private key. <code>ecfg</code> has a
+default lookup path for key directories:</p>
+
+<ul>
+<li><code>$XDG_CONFIG_HOME/ecfg/keys</code> (if <code>$XDG_CONFIG_HOME</code> is set and running as non-root user)</li>
+<li><code>$HOME/.ecfg/keys</code> (if running as non-root user)</li>
+<li><code>/etc/ecfg/keys</code></li>
+<li><code>/opt/ejson/keys</code> (for backwards-compatibility with <code>ejson</code>)</li>
+</ul>
+
+
+<p>When passing <code>-k</code> or <code>--keydir</code> to <code>ecfg</code>, or when invoked with <code>ECFG_KEYDIR</code>
+in the environment, this lookup path is completely ignored and the key is
+instead retrieved from or stored to the provided path.</p>
+
+<p>If <code>ECFG_PRIVATE_KEY</code> is set for decryption, the key directories aren't even
+touched; instead, we just assume the provided private key is the correct one,
+failing if it's not.</p>
 
 <h2 id="WORKFLOW">WORKFLOW</h2>
 
@@ -204,8 +237,8 @@ only takes one file parameter, and prints the output to <code>stdout</code>:</p>
 
 <h2 id="BUGS">BUGS</h2>
 
-<p>Report security issues to <a href="&#x6d;&#x61;&#x69;&#x6c;&#x74;&#111;&#58;&#x62;&#x75;&#114;&#107;&#101;&#x2e;&#108;&#105;&#98;&#x62;&#x65;&#x79;&#64;&#x73;&#x68;&#111;&#x70;&#x69;&#x66;&#x79;&#x2e;&#99;&#111;&#109;" data-bare-link="true">&#x62;&#x75;&#x72;&#107;&#x65;&#46;&#108;&#105;&#x62;&#98;&#101;&#x79;&#x40;&#115;&#104;&#x6f;&#112;&#x69;&#x66;&#121;&#x2e;&#99;&#111;&#109;</a> and
-<a href="&#x6d;&#97;&#x69;&#108;&#116;&#x6f;&#58;&#x73;&#x65;&#99;&#117;&#114;&#105;&#116;&#121;&#x40;&#x73;&#104;&#x6f;&#112;&#105;&#x66;&#121;&#46;&#99;&#x6f;&#109;" data-bare-link="true">&#x73;&#x65;&#x63;&#117;&#114;&#x69;&#x74;&#121;&#x40;&#x73;&#104;&#111;&#112;&#105;&#102;&#121;&#46;&#x63;&#111;&#109;</a>.</p>
+<p>Report security issues to <a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#x3a;&#x62;&#117;&#114;&#107;&#101;&#x2e;&#x6c;&#105;&#x62;&#x62;&#101;&#x79;&#64;&#115;&#x68;&#111;&#x70;&#x69;&#102;&#x79;&#x2e;&#x63;&#111;&#x6d;" data-bare-link="true">&#x62;&#117;&#x72;&#x6b;&#x65;&#x2e;&#108;&#105;&#x62;&#98;&#x65;&#x79;&#x40;&#115;&#x68;&#111;&#x70;&#x69;&#102;&#x79;&#46;&#x63;&#x6f;&#x6d;</a> and
+<a href="&#109;&#x61;&#105;&#x6c;&#116;&#111;&#x3a;&#x73;&#x65;&#99;&#117;&#114;&#x69;&#116;&#x79;&#64;&#x73;&#104;&#x6f;&#112;&#105;&#x66;&#x79;&#x2e;&#99;&#x6f;&#x6d;" data-bare-link="true">&#115;&#101;&#99;&#117;&#114;&#105;&#116;&#121;&#64;&#x73;&#x68;&#111;&#112;&#x69;&#102;&#121;&#46;&#x63;&#x6f;&#109;</a>.</p>
 
 <p>File non-security-related bugs at <a href="https://github.com/Shopify/ecfg" data-bare-link="true">https://github.com/Shopify/ecfg</a>.</p>
 

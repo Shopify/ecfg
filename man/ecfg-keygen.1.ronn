@@ -16,8 +16,9 @@ decrypting system(s).
 `-w`, `--write`
 
 :   Rather than printing the keypair to the screen, write it directly to the
-    keydir.  The public key will still be printed, but the private key will be
-    inserted into the keydir
+    keydir. The public key will still be printed, but the private key will be
+    inserted into the first writable path listed in the key paths, decribed in
+    more detail in ecfg(1).
 
 ## SEE ALSO
 

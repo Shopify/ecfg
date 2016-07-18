@@ -24,6 +24,8 @@ The main benefits provided by `ecfg` are:
 
 See [the manpages](https://shopify.github.io/ecfg) for more technical documentation.
 
+*ecfg is written in lowercase, and normally pronounced "e-config", like "email".*
+
 ## Differences from EJSON 1.0
 
 * Supports YAML and TOML

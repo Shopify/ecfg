@@ -188,7 +188,5 @@ of:
 1. Install bundler *(`gem install bundler`)*
 1. `bundle install`
 1. Install Go *(`brew install go`)*
-1. [Configure your `$GOPATH`](https://github.com/golang/go/wiki/GOPATH)
-1. Install gox *(`go get -u github.com/mitchellh/gox`)*
-1. Make sure `$GOPATH/bin` is on your `$PATH`.
+1. [Configure your `$GOPATH`](https://github.com/golang/go/wiki/GOPATH) and make sure this is on it at github.com/Shopify/ecfg.
 1. `make`

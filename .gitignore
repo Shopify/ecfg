@@ -6,3 +6,4 @@
 man/*.html
 man/*.1
 man/*.5
+.DS_Store

@@ -4,7 +4,7 @@ up:
   - homebrew:
       - dpkg
   - ruby: 2.1.6
-  - go: 1.6.2
+  - go: 1.6.3
   - bundler
 
 commands:

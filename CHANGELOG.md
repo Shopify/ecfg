@@ -1,3 +1,7 @@
+# 0.3.0
+
+* Add key lookup path (~/.ecfg/keys -> /etc/ecfg/keys -> /opt/ejson/keys)
+
 # 0.2.0
 
 * Add TOML support

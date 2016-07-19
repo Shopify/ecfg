@@ -91,11 +91,11 @@ man/html/%: man/%
 	@mkdir -p "$(@D)"
 	@cp "$<" "$@"
 
-man/%: man/%.ronn
+man/%: man/%.ronn VERSION
 	$(INFO) 'ronn' 'man/*'
 	$(VERBOSE) $(RONN) $(RONN_FLAGS) man/*.ronn $(VSILENCE)
 
-man/%.html: man/%.ronn
+man/%.html: man/%.ronn VERSION
 	$(INFO) 'ronn' 'man/*'
 	$(VERBOSE) $(RONN) $(RONN_FLAGS) man/*.ronn $(VQUIET)
 

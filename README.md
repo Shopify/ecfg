@@ -173,7 +173,8 @@ of:
    keygen`.
 3. Any string literal that isn't an object key will be encrypted by default (ie.
    in `{"a": "b"}`, `"b"` will be encrypted, but `"a"` will not.
-4. Numbers, booleans, and nulls aren't encrypted.
+4. Non-string data types aren't encrypted in json or toml, but are in yaml,
+   simply because it makes the transformer code simpler.
 5. If a key begins with an underscore, its corresponding value will not be
    encrypted. This is used to prevent the `_public_key` field from being
    encrypted, and is useful for implementing metadata schemes.

@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"syscall"
 
 	"github.com/Shopify/ecfg"
 )
+
+const access_W_OK = 0x02
 
 func encryptAction(filePath string, ftype ecfg.FileType) error {
 	if filePath == "" { // read from stdin, write to stdout
@@ -35,7 +38,7 @@ func decryptAction(filePath string, keydir, outFile string, ftype ecfg.FileType)
 		if err != nil {
 			return err
 		}
-		out, err := ecfg.DecryptData(data, keydir, ftype)
+		out, err := ecfg.DecryptData(data, []string{keydir}, ftype)
 		if err != nil {
 			return err
 		}
@@ -43,7 +46,7 @@ func decryptAction(filePath string, keydir, outFile string, ftype ecfg.FileType)
 		return nil
 	}
 
-	decrypted, err := ecfg.DecryptFile(filePath, keydir, ecfg.FileTypeJSON)
+	decrypted, err := ecfg.DecryptFile(filePath, ecfg.DefaultKeypath(), ecfg.FileTypeJSON)
 	if err != nil {
 		return err
 	}
@@ -67,16 +70,33 @@ func keygenAction(args []string, keydir string, wFlag bool) error {
 		return err
 	}
 
-	if wFlag {
-		keyFile := fmt.Sprintf("%s/%s", keydir, pub)
-		err := writeFile(keyFile, []byte(priv), 0440)
-		if err != nil {
-			return err
-		}
-		fmt.Println(pub)
-	} else {
+	if !wFlag {
 		fmt.Printf("Public Key:\n%s\nPrivate Key:\n%s\n", pub, priv)
+		return nil
 	}
+
+	if keydir == "" {
+		kp := ecfg.DefaultKeypath()
+		for _, candidate := range kp {
+			if syscall.Access(candidate, access_W_OK) == nil {
+				keydir = candidate
+				break
+			}
+		}
+	}
+	if keydir == "" {
+		return fmt.Errorf(
+			"ecfg keydir not writable. Set ECFG_KEYDIR or ensure directory exists and is writable: %s",
+			ecfg.DefaultKeypath()[0])
+	}
+
+	keyFile := fmt.Sprintf("%s/%s", keydir, pub)
+	err = writeFile(keyFile, []byte(priv), 0440)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(os.Stderr, "wrote key to %s\n", keydir)
+	fmt.Fprintf(os.Stdout, "%s\n", pub)
 	return nil
 }
 

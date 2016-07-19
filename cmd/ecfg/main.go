@@ -41,7 +41,7 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "keydir, k",
-			Value:  "/opt/ecfg/keys",
+			Value:  "",
 			Usage:  "Directory containing ecfg keys",
 			EnvVar: "ECFG_KEYDIR",
 		},

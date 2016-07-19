@@ -28,10 +28,10 @@ type boxedMessage struct {
 	Box             []byte
 }
 
-// IsBoxedMessage tests whether a value is formatted using the boxedMessage
+// isBoxedMessage tests whether a value is formatted using the boxedMessage
 // format. This can be used to determine whether a string value requires
 // encryption or is already encrypted.
-func IsBoxedMessage(data []byte) bool {
+func isBoxedMessage(data []byte) bool {
 	return messageParser.Find(data) != nil
 }
 

@@ -37,17 +37,17 @@ func TestBoxedMessageRoundtripping(t *testing.T) {
 		t.Errorf("unexpected Box")
 	}
 
-	// IsBoxedMessage
-	if !IsBoxedMessage([]byte(wire)) {
-		t.Errorf("IsBoxedMessage incorrect")
+	// isBoxedMessage
+	if !isBoxedMessage([]byte(wire)) {
+		t.Errorf("isBoxedMessage incorrect")
 	}
-	if IsBoxedMessage([]byte("nope")) {
-		t.Errorf("IsBoxedMessage incorrect")
+	if isBoxedMessage([]byte("nope")) {
+		t.Errorf("isBoxedMessage incorrect")
 	}
-	if IsBoxedMessage([]byte("EJ[]")) {
-		t.Errorf("IsBoxedMessage incorrect")
+	if isBoxedMessage([]byte("EJ[]")) {
+		t.Errorf("isBoxedMessage incorrect")
 	}
-	if !IsBoxedMessage([]byte("EJ[1:12345678901234567890123456789012345678901234:12345678901234567890123456789012:a]")) {
-		t.Errorf("IsBoxedMessage incorrect")
+	if !isBoxedMessage([]byte("EJ[1:12345678901234567890123456789012345678901234:12345678901234567890123456789012:a]")) {
+		t.Errorf("isBoxedMessage incorrect")
 	}
 }

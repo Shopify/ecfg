@@ -74,7 +74,7 @@ func (k *Keypair) PrivateString() string {
 // Encrypter returns an Encrypter instance, given a public key, to encrypt
 // messages to the paired, unknown, private key.
 func (k *Keypair) Encrypter(peerPublic [32]byte) *Encrypter {
-	return NewEncrypter(k, peerPublic)
+	return newEncrypter(k, peerPublic)
 }
 
 // Decrypter returns a Decrypter instance, used to decrypt properly formatted
@@ -83,9 +83,9 @@ func (k *Keypair) Decrypter() *Decrypter {
 	return &Decrypter{Keypair: k}
 }
 
-// NewEncrypter instantiates an Encrypter after pre-computing the shared key for
+// newEncrypter instantiates an Encrypter after pre-computing the shared key for
 // the owned keypair and the given decrypter public key.
-func NewEncrypter(kp *Keypair, peerPublic [32]byte) *Encrypter {
+func newEncrypter(kp *Keypair, peerPublic [32]byte) *Encrypter {
 	var shared [32]byte
 	box.Precompute(&shared, &peerPublic, &kp.Private)
 	return &Encrypter{
@@ -117,7 +117,7 @@ func (e *Encrypter) encrypt(message []byte) (*boxedMessage, error) {
 // secure, it just doesn't allow for authorizing the encryptor. That's fine,
 // since authorization isn't a desired property of this particular cryptosystem.
 func (e *Encrypter) Encrypt(message []byte) ([]byte, error) {
-	if IsBoxedMessage(message) {
+	if isBoxedMessage(message) {
 		return message, nil
 	}
 	boxedMessage, err := e.encrypt(message)

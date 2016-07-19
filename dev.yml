@@ -6,6 +6,18 @@ up:
   - ruby: 2.1.6
   - go: 1.6.3
   - bundler
+  - custom:
+      name: 'Assert Docker Installed'
+      met?: 'which docker >/dev/null'
+      meet: echo "you must install docker, dev doesn't do this for you yet."
+  - custom:
+      name: 'Pull xgo Docker Image'
+      met?: "docker inspect --format='.' karalabe/xgo-latest >/dev/null 2>&1"
+      meet: docker pull karalabe/xgo-latest
+  - custom:
+      name: 'Install xgo'
+      met?: 'which xgo > /dev/null'
+      meet: go get github.com/karalabe/xgo
 
 commands:
   build: make

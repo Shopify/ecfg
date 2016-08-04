@@ -23,7 +23,8 @@ A value is considered encryptable if:
 
 1. It is a string literal (numbers, true, false, null all remain unencrypted);
 
-2. It is not an object key (ie. not immediately followed by a ":");
+2. It is not an object key (ie. not immediately followed by a ":" in JSON,
+   etc.);
 
 3. Its corresponding object key did not begin with an underscore ("\_").
 

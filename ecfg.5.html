@@ -157,8 +157,8 @@ embedded in ecfg files as hex-encoded strings, so we need a routine to convert
 them:</p>
 
 <pre><code>base16_to_raw(key : string) -&gt; []byte =
-  # convert e.g. "1234beef" into [0x12, 0x34, 0xBE, 0xEF] or whatever the
-  # particular NaCl implementation/binding wants.
+  # convert e.g. "1234beef" into [0x12, 0x34, 0xBE, 0xEF] or whatever
+  # the particular NaCl implementation/binding wants.
 </code></pre>
 
 <p>When we write the final encrypted message according to the <code>SECRET SCHEMA</code>

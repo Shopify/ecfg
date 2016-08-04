@@ -68,6 +68,94 @@ Nonce used to encrypt this key
 * `M` (base64-encoded variable-length array)
 Raw ciphertext
 
+## ENCRYPTION ALGORITHMS
+
+`ecfg` values are encrypted using a Curve25519 x Salsa20 x Poly1305-AES
+public-key scheme. This normally implies use of `NaCl` or `libsodium`.
+
+NaCl libraries generally take keys as a sequence of raw bytes, but they're
+embedded in ecfg files as hex-encoded strings, so we need a routine to convert
+them:
+
+```
+base16_to_raw(key : string) -> []byte =
+  # convert e.g. "1234beef" into [0x12, 0x34, 0xBE, 0xEF] or whatever the
+  # particular NaCl implementation/binding wants.
+```
+
+When we write the final encrypted message according to the `SECRET SCHEMA`
+section, we need to encode several sequences of raw bytes to base64, with
+newlines removed:
+
+```
+encode(raw : []byte) -> string =
+  sub("\n", "", base64_encode(raw))
+```
+
+Building the message given the ciphertext and other input parameters is just
+string concatenation:
+
+```
+format(pub : []byte, nonce : []byte, ct : []byte) -> string =
+  "EJ[1:" + encode(pub) + ":" + encode(nonce) + ":" + encode(ct) + "]"
+```
+
+During encryption, an ephemeral keypair is generated and the public key is
+embedded in the encrypted message.
+
+The final encryption routine combines accepts a plaintext string and a
+hex-encoded public key extracted from the input document, returning a formatted
+`ecfg` message. The NaCl API calls here are loosely paraphrased.
+
+```
+encrypt(plaintext : string, peer_pub_hex : string) -> string =
+  peer_pub = base16_to_raw(peer_pub_hex)
+
+  (ephemeral_pub, ephemeral_priv) = NACL.crypto_box_keypair()
+
+  # 24 random bytes
+  nonce = NACL.randombytes(NACL.NONCE_BYTES)
+
+  # API here varies a lot depending on binding.
+  ciphertext = NACL.crypto_box(
+    plaintext,
+    ephemeral_priv, peer_pub, nonce
+  )
+
+  format(ephemeral_pub, nonce, ciphertext)
+```
+
+If multiple values are being encrypted at once, a single ephemeral keypair may
+be reused. It may make sense but is by no means necessary to use box
+precomputation if it's available.
+
+## DECRYPTION ALGORITHMS
+
+To decrypt messages from a document, the caller must first retrieve the private
+key associated to the public key embedded in the document, then the message
+must be decomposed into the three encoded values. This is just the inverse of
+the process from the encryption section above: remove the "EJ[]" enclosure;
+split the message on ":", check that the version is 1, then base64-decode the
+remaining three components.
+
+Given those three components (`peer_pubkey`, `nonce`, and `ciphertext`), the
+decryption routine looks like:
+
+```
+decrypt(
+  target_privkey : string,
+  peer_pubkey    : []byte,
+  nonce          : []byte,
+  ciphertext     : []byte,
+) -> string =
+  priv = base16_to_raw(target_privkey)
+
+  # like above, this API varies a lot by binding implementation.
+  NACL.crypto_box_open(
+    priv, peer_pubkey, nonce, ciphertext
+  )
+```
+
 ## SEE ALSO
 
 ecfg(1), ecfg-encrypt(1), ecfg-decrypt(1), ecfg-keygen(1)

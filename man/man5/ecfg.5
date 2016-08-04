@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "ECFG" "5" "July 2016" "Shopify" "Version 0.3.0"
+.TH "ECFG" "5" "August 2016" "Shopify" "Version 0.3.0"
 .
 .SH "NAME"
 \fBecfg\fR \- JSON, YAML, or TOML file with asymmetric\-key\-encrypted values
@@ -80,6 +80,112 @@ When a value is encrypted, it will be replaced by a relatively long string of th
 .
 .IP "\(bu" 4
 \fBM\fR (base64\-encoded variable\-length array) Raw ciphertext
+.
+.IP "" 0
+.
+.SH "ENCRYPTION ALGORITHMS"
+\fBecfg\fR values are encrypted using a Curve25519 x Salsa20 x Poly1305\-AES public\-key scheme\. This normally implies use of \fBNaCl\fR or \fBlibsodium\fR\.
+.
+.P
+NaCl libraries generally take keys as a sequence of raw bytes, but they\'re embedded in ecfg files as hex\-encoded strings, so we need a routine to convert them:
+.
+.IP "" 4
+.
+.nf
+
+base16_to_raw(key : string) \-> []byte =
+  # convert e\.g\. "1234beef" into [0x12, 0x34, 0xBE, 0xEF] or whatever the
+  # particular NaCl implementation/binding wants\.
+.
+.fi
+.
+.IP "" 0
+.
+.P
+When we write the final encrypted message according to the \fBSECRET SCHEMA\fR section, we need to encode several sequences of raw bytes to base64, with newlines removed:
+.
+.IP "" 4
+.
+.nf
+
+encode(raw : []byte) \-> string =
+  sub("\en", "", base64_encode(raw))
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Building the message given the ciphertext and other input parameters is just string concatenation:
+.
+.IP "" 4
+.
+.nf
+
+format(pub : []byte, nonce : []byte, ct : []byte) \-> string =
+  "EJ[1:" + encode(pub) + ":" + encode(nonce) + ":" + encode(ct) + "]"
+.
+.fi
+.
+.IP "" 0
+.
+.P
+During encryption, an ephemeral keypair is generated and the public key is embedded in the encrypted message\.
+.
+.P
+The final encryption routine combines accepts a plaintext string and a hex\-encoded public key extracted from the input document, returning a formatted \fBecfg\fR message\. The NaCl API calls here are loosely paraphrased\.
+.
+.IP "" 4
+.
+.nf
+
+encrypt(plaintext : string, peer_pub_hex : string) \-> string =
+  peer_pub = base16_to_raw(peer_pub_hex)
+
+  (ephemeral_pub, ephemeral_priv) = NACL\.crypto_box_keypair()
+
+  # 24 random bytes
+  nonce = NACL\.randombytes(NACL\.NONCE_BYTES)
+
+  # API here varies a lot depending on binding\.
+  ciphertext = NACL\.crypto_box(
+    plaintext,
+    ephemeral_priv, peer_pub, nonce
+  )
+
+  format(ephemeral_pub, nonce, ciphertext)
+.
+.fi
+.
+.IP "" 0
+.
+.P
+If multiple values are being encrypted at once, a single ephemeral keypair may be reused\. It may make sense but is by no means necessary to use box precomputation if it\'s available\.
+.
+.SH "DECRYPTION ALGORITHMS"
+To decrypt messages from a document, the caller must first retrieve the private key associated to the public key embedded in the document, then the message must be decomposed into the three encoded values\. This is just the inverse of the process from the encryption section above: remove the "EJ[]" enclosure; split the message on ":", check that the version is 1, then base64\-decode the remaining three components\.
+.
+.P
+Given those three components (\fBpeer_pubkey\fR, \fBnonce\fR, and \fBciphertext\fR), the decryption routine looks like:
+.
+.IP "" 4
+.
+.nf
+
+decrypt(
+  target_privkey : string,
+  peer_pubkey    : []byte,
+  nonce          : []byte,
+  ciphertext     : []byte,
+) \-> string =
+  priv = base16_to_raw(target_privkey)
+
+  # like above, this API varies a lot by binding implementation\.
+  NACL\.crypto_box_open(
+    priv, peer_pubkey, nonce, ciphertext
+  )
+.
+.fi
 .
 .IP "" 0
 .

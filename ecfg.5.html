@@ -64,12 +64,14 @@
     <a href="#PUBLIC-KEY">PUBLIC KEY</a>
     <a href="#ENCRYPTABLE-VALUES">ENCRYPTABLE VALUES</a>
     <a href="#SECRET-SCHEMA">SECRET SCHEMA</a>
+    <a href="#ENCRYPTION-ALGORITHMS">ENCRYPTION ALGORITHMS</a>
+    <a href="#DECRYPTION-ALGORITHMS">DECRYPTION ALGORITHMS</a>
     <a href="#SEE-ALSO">SEE ALSO</a>
   </div>
 
   <ol class='man-decor man-head man head'>
     <li class='tl'>ecfg(5)</li>
-    <li class='tc'>Version 0.2.0</li>
+    <li class='tc'>Version 0.3.0</li>
     <li class='tr'>ecfg(5)</li>
   </ol>
 
@@ -145,6 +147,89 @@ Raw ciphertext</p></li>
 </ul>
 
 
+<h2 id="ENCRYPTION-ALGORITHMS">ENCRYPTION ALGORITHMS</h2>
+
+<p><code>ecfg</code> values are encrypted using a Curve25519 x Salsa20 x Poly1305-AES
+public-key scheme. This normally implies use of <code>NaCl</code> or <code>libsodium</code>.</p>
+
+<p>NaCl libraries generally take keys as a sequence of raw bytes, but they're
+embedded in ecfg files as hex-encoded strings, so we need a routine to convert
+them:</p>
+
+<pre><code>base16_to_raw(key : string) -&gt; []byte =
+  # convert e.g. "1234beef" into [0x12, 0x34, 0xBE, 0xEF] or whatever the
+  # particular NaCl implementation/binding wants.
+</code></pre>
+
+<p>When we write the final encrypted message according to the <code>SECRET SCHEMA</code>
+section, we need to encode several sequences of raw bytes to base64, with
+newlines removed:</p>
+
+<pre><code>encode(raw : []byte) -&gt; string =
+  sub("\n", "", base64_encode(raw))
+</code></pre>
+
+<p>Building the message given the ciphertext and other input parameters is just
+string concatenation:</p>
+
+<pre><code>format(pub : []byte, nonce : []byte, ct : []byte) -&gt; string =
+  "EJ[1:" + encode(pub) + ":" + encode(nonce) + ":" + encode(ct) + "]"
+</code></pre>
+
+<p>During encryption, an ephemeral keypair is generated and the public key is
+embedded in the encrypted message.</p>
+
+<p>The final encryption routine combines accepts a plaintext string and a
+hex-encoded public key extracted from the input document, returning a formatted
+<code>ecfg</code> message. The NaCl API calls here are loosely paraphrased.</p>
+
+<pre><code>encrypt(plaintext : string, peer_pub_hex : string) -&gt; string =
+  peer_pub = base16_to_raw(peer_pub_hex)
+
+  (ephemeral_pub, ephemeral_priv) = NACL.crypto_box_keypair()
+
+  # 24 random bytes
+  nonce = NACL.randombytes(NACL.NONCE_BYTES)
+
+  # API here varies a lot depending on binding.
+  ciphertext = NACL.crypto_box(
+    plaintext,
+    ephemeral_priv, peer_pub, nonce
+  )
+
+  format(ephemeral_pub, nonce, ciphertext)
+</code></pre>
+
+<p>If multiple values are being encrypted at once, a single ephemeral keypair may
+be reused. It may make sense but is by no means necessary to use box
+precomputation if it's available.</p>
+
+<h2 id="DECRYPTION-ALGORITHMS">DECRYPTION ALGORITHMS</h2>
+
+<p>To decrypt messages from a document, the caller must first retrieve the private
+key associated to the public key embedded in the document, then the message
+must be decomposed into the three encoded values. This is just the inverse of
+the process from the encryption section above: remove the "EJ[]" enclosure;
+split the message on ":", check that the version is 1, then base64-decode the
+remaining three components.</p>
+
+<p>Given those three components (<code>peer_pubkey</code>, <code>nonce</code>, and <code>ciphertext</code>), the
+decryption routine looks like:</p>
+
+<pre><code>decrypt(
+  target_privkey : string,
+  peer_pubkey    : []byte,
+  nonce          : []byte,
+  ciphertext     : []byte,
+) -&gt; string =
+  priv = base16_to_raw(target_privkey)
+
+  # like above, this API varies a lot by binding implementation.
+  NACL.crypto_box_open(
+    priv, peer_pubkey, nonce, ciphertext
+  )
+</code></pre>
+
 <h2 id="SEE-ALSO">SEE ALSO</h2>
 
 <p><a class="man-ref" href="ecfg.1.html">ecfg<span class="s">(1)</span></a>, <a class="man-ref" href="ecfg-encrypt.1.html">ecfg-encrypt<span class="s">(1)</span></a>, <a class="man-ref" href="ecfg-decrypt.1.html">ecfg-decrypt<span class="s">(1)</span></a>, <a class="man-ref" href="ecfg-keygen.1.html">ecfg-keygen<span class="s">(1)</span></a></p>
@@ -152,7 +237,7 @@ Raw ciphertext</p></li>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Shopify</li>
-    <li class='tc'>July 2016</li>
+    <li class='tc'>August 2016</li>
     <li class='tr'>ecfg(5)</li>
   </ol>
 

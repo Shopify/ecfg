@@ -1,3 +1,7 @@
+# 0.3.1
+
+* Fix case where ECFG_KEYDIR wasn't used
+
 # 0.3.0
 
 * Add key lookup path (~/.ecfg/keys -> /etc/ecfg/keys -> /opt/ejson/keys)

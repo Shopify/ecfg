@@ -33,12 +33,17 @@ func encryptAction(filePath string, ftype ecfg.FileType) error {
 }
 
 func decryptAction(filePath string, keydir, outFile string, ftype ecfg.FileType) error {
+	keypath := ecfg.DefaultKeypath()
+	if keydir != "" {
+		keypath = []string{keydir}
+	}
+
 	if filePath == "" { // read from stdin, write to stdout
 		data, err := ioutil.ReadAll(os.Stdin)
 		if err != nil {
 			return err
 		}
-		out, err := ecfg.DecryptData(data, []string{keydir}, ftype)
+		out, err := ecfg.DecryptData(data, keypath, ftype)
 		if err != nil {
 			return err
 		}
@@ -46,7 +51,7 @@ func decryptAction(filePath string, keydir, outFile string, ftype ecfg.FileType)
 		return nil
 	}
 
-	decrypted, err := ecfg.DecryptFile(filePath, ecfg.DefaultKeypath(), ecfg.FileTypeJSON)
+	decrypted, err := ecfg.DecryptFile(filePath, keypath, ecfg.FileTypeJSON)
 	if err != nil {
 		return err
 	}

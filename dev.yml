@@ -11,7 +11,3 @@ commands:
   build: make
   run-built: build/bin/darwin-amd64
   test: go test ./...
-
-packages:
-  - git@github.com:Shopify/dev-shopify.git
-

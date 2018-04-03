@@ -1,5 +1,10 @@
 # ecfg
 
+**`ecfg` is nearly complete, but there are still some bugs. None of the known ones will compromise
+your data, as the encryption stuff is all basically identical to `ejson`. However, it might write
+out improperly formatted data, fail completely, etc. We originally intended to replace `ejson` with
+`ecfg`, but ended up never getting around to it. Caveat Implementor**
+
 `ecfg` is a utility for managing a collection of secrets, generally with the
 intent of committing them to source control. The secrets are encrypted using
 [public key](http://en.wikipedia.org/wiki/Public-key_cryptography), [elliptic
